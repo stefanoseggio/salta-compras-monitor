@@ -1,0 +1,330 @@
+
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+   <head>
+       <meta charset="utf-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+       <base href="https://compras.salta.gob.ar/" />
+       <link rel="shortcut icon" href="./assets/images/favicon.ico" type="image/x-icon">
+       <title>Bienvenidos al Portal de Compras y Contrataciones del Estado</title>
+       <meta name="description" content="">
+       <meta name="viewport" content="width=device-width,initial-scale=1">
+
+       <link rel="stylesheet" type="text/css" href="./assets/themes/piedra1.0/css/layout.contents.css"/>
+       <script type="text/javascript" src="./assets/libraries/jquery/jquery-1.11.1.min.js"></script>
+       <!--<link rel="stylesheet" type="text/css" href="./assets/css/ui-autocomplete-custom.css"/>-->
+       <!--<link rel="stylesheet" type="text/css" href="./assets/themes/publico/css/normalize-style.css"/>-->
+       <link rel="stylesheet" type="text/css" href="./assets/css/ui-autocomplete-custom.css"/>
+       <link rel="stylesheet" type="text/css" href="./assets/themes/publico/css/jqueryvalidation-validationEngine.jquery.css"/>
+
+       <!--<script type="text/javascript" src="./assets/libraries/modernizr-2.0.6/modernizr-2.0.6.min.js" ></script>-->
+       <!--<script type="text/javascript" src="./assets/libraries/jquery.md5/jquery.md5.js" ></script>-->
+
+       <!-- Autocomplete -->
+
+       <!-- ViaAjax -->
+       <script type="text/javascript" src="./assets/libraries/jqueryvalidation/js/languages/jquery.validationEngine-es.js"></script>
+       <script type="text/javascript" src="./assets/libraries/jqueryvalidation/js/jquery.validationEngine.js"></script>
+       <script type="text/javascript" src="./assets/libraries/jqueryviaajax/jquery.viaajax.js"></script>
+
+       <!-- GridviewHandler -->
+       <script type="text/javascript" src="assets/libraries/jquery.gridhandler/jquery.gridhandler.js"></script>
+
+       <!--<link rel="stylesheet" type="text/css" href="./assets/themes/publico/css/bootstrap.min.css"/>-->
+       <link rel="stylesheet" type="text/css" href="./assets/libraries/bootstrap-3.3.1/css/bootstrap.min.css"/>
+
+       <link rel="stylesheet" type="text/css" href="./assets/themes/publico/css/main.css"/>
+       <!--<script src="./assets/themes/publico/js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>-->
+       <!--<script src="./assets/themes/publico/js/bootstrap.min.js"></script>-->
+       <script src="./assets/libraries/bootstrap-3.3.1/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+       <!--[if lt IE 8]>
+           <div class="alert alert-error"><p class="chromeframe" style="text-align:center;">Estas utilizando un navegador <strong>desactualizado</strong>. Por favor <a href="http://browsehappy.com/">actualiza tu navegador</a> o <a href="http://www.google.com/chromeframe/?redirect=true">activa Google Chrome Frame</a> para mejorar tu experiencia de usuario.</p></div>
+       <![endif]-->
+        <header>
+          <div class="main-header">
+              <div class="container">
+                <div class="row">
+                  <img
+                    alt="Subsecretaría de Procedimiento de Contrataciones de Bienes y Servicios"
+                    src="./assets/themes/publico/img/logo-banner-salta.png"
+                    title="Subsecretaría de Procedimiento de Contrataciones de Bienes y Servicios"
+                    style="max-width:auto;max-height:153px;"
+                  />
+                </div>
+              </div>
+          </div>
+        </header>
+        <div class="container">
+        <!-- <div class="navbar navbar-inverse navbar-fixed-top">-->
+        <div class="menu-adapter navbar navbar-inner">
+            <div class="container">
+                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <div style="float: left">
+                    <ul id="navigation" class="nav-main">
+                        <li class="separador"><a href="#">Inicio</a></li>
+                        <li class="list separador">
+                           <a href="publico/home/contenido/1">Institucional</a>
+                           <ul class="nav-sub">
+                               <li><a href="publico/home/institucional/1">Quienes somos</a></li>
+                               <li><a href="publico/home/institucional/2">Mapa estratégico</a></li>
+                               <li><a href="publico/home/institucional/4">Gestión</a></li>
+                               <li><a href="publico/home/institucional/5">Actividades desarrolladas</a></li>
+                               <li><a href="publico/home/institucional/6">Políticas de Calidad</a></li>
+                           </ul>
+                        </li>
+                        <!--<li class="separador"><a href="publico/publicacionactual/cambiarvigencia">Publicaciones</a></li>-->
+                        <!--<li class="separador"><a href="publico/home/contenido/2">Proovedores</a></li>-->
+                        <!--<li class="separador"><a href="#">Novedades</a></li>-->
+                        <li class="separador"><a href="publico/home/contenido/4">Preguntas frecuentes</a></li>
+                        <li class="separador"><a href="publico/home/contenido/5">Normativa</a></li>
+                        <li><a href="publico/home/contenido/20">Contacto</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+                           <div class="main big-shadow">
+                                <hr style="height: 20px; margin: 0px;"/>
+                                <div class="row">
+                    <div class="col-md-8" style="padding-left: 20px;">
+                                                            <article class="publicacion">
+    <div class="media">
+        <div class="publicacion-encabezado">
+            <span style="float:right; padding:0 10px 0 0;">
+               <span>Fecha/Hora Apertura:</span>
+               <span>07/09/2026</span> - 
+               <span>09:00:00</span>
+            </span>
+            <span>Adjudicación Simple N° 98/2026</span>
+            <div class="clearfloat"></div>    
+        </div>    	   
+    </div>
+    <div class="publicacion-cuerpo">
+        <div class="publicacion-fila breakword">
+            <span class="publicacion-fila-titulo">Objeto:</span>
+            <span class="publicacion-fila-descripcion">ADQ. DE UN MOTOR TRIFASICO. PROGRAMA DE FISCALIZACION Y CONTROL</span>
+        </div>
+        <div class="publicacion-fila">
+            <span class="publicacion-fila-titulo">Organismo Gestor:</span>
+            <span class="publicacion-fila-descripcion">Secretaria de Procedimientos de Contrataciones</span>
+        </div>
+        <div class="publicacion-fila">
+            <span class="publicacion-fila-titulo">Organismo Originante y Destino:</span>
+            <span class="publicacion-fila-descripcion">Hospital Señor del Milagro</span>
+        </div>
+                                                            <div class="publicacion-fila">
+                <span class="publicacion-fila-titulo">Expediente:</span>
+                <span class="publicacion-fila-descripcion">0100134-173362/2026-0</span>
+            </div>
+                                    <div class="publicacion-fila breakword">
+                <span class="publicacion-fila-titulo">Consulta y Adquisición Pliego:</span>
+                <span class="publicacion-fila-descripcion">HOSPITAL SEÑOR DEL MILAGRO-SECTOR COMPRAS -AVDA SARMIENTO 557 - SALTA CAPITAL- TEL.0387-4210223-0387-4317400 INT.242</span>
+            </div>
+        
+                    <div class="publicacion-fila breakword">
+                <span class="publicacion-fila-titulo">Lugar Entrega de Sobre y Apertura:</span>
+                <span class="publicacion-fila-descripcion"><p>HOSPITAL SEÑOR DEL MILAGRO - SECTOR COMPRAS - AVDA SARMIETO 557 -SALTA CAPITAL</p></span>
+            </div>
+        
+                    <div class="publicacion-fila">
+                <span class="publicacion-fila-titulo">Consultas:</span>
+                <span class="publicacion-fila-descripcion">cotizacioneshmilagro@gmail.com TEL 387-4210223</span>
+            </div>
+                <div style="width: 100%; margin:20px 0 20px 0; padding:10px 0 10px 10px; border:1px solid #8d8d8d;">
+             <img alt="descarga" src="./assets/themes/publico/img/descarga2.png"  width="55px" height="55px" title="Descarga" />
+             <span style="padding-top: 20px; height:60px; font-weight:bold;">Archivos Adjuntos</span>
+                 <ul style="padding: 0 10px 0 10px;">
+                     <li style="padding:8px 0 8px 0;">
+                         <a href="publico/publicacionactual/pdfunapublicacion/148204" title="Publicacion pdf" target="_blank">
+                             Publicaci&oacute;n en formato pdf
+                         </a>
+                     </li>
+                                           <li style="padding:4px 0 4px 0;">
+                                           <a href="publico/publicacionactual/descargarArchivoAdjunto/01092026154027.pdf" title="PLIEGO Y CONDICIONES PP 198-26 -AS 98-26 - ADQ. DE MOTOR- FISCALIZACION.">
+                                            PLIEGO Y CONDICIONES PP 198-26 -AS 98-26 - ADQ. DE MOTOR- FISCALIZACION.
+                                           </a>    
+                                       </li><li style="padding:4px 0 4px 0;">
+                                           <a href="publico/publicacionactual/descargarArchivoAdjunto/01092026154037.xlsx" title="COTIZACION  PP 198-26 AS 98-26 -MOTOR TRIFASICO- FISCALIZACION">
+                                            COTIZACION  PP 198-26 AS 98-26 -MOTOR TRIFASICO- FISCALIZACION
+                                           </a>    
+                                       </li>           
+                 </ul>                                 	     
+        </div>
+    </div>    
+</article>
+<div class="buttons" style="margin-right: 5px !important;">
+    <input class="clsSubmit" type="button" value="Volver" onclick="window.location = 'publico/publicacionactual/panelfiltrobusqueda/0'"/>   
+</div>
+<div class="clearfloat">&nbsp;</div>
+                                                    <br />
+                    </div>
+                    <div class="col-md-4"><div class="container-banner">
+  <div class="box-titulos"><h2 class="texto-titulo2">ENLACES DESTACADOS</h2></div>
+  <div class="banner">
+    <a
+      href="../normativas/decreto_572-20_reglamentacion_ley_7645.pdf"
+      target="_blank"
+      title="Decreto N° 572-20 - Reglamentación LEY N° 7645. Régimen de Compre y Contrate Trabajo Salteño."
+    >
+      <span>
+        <p>
+          Decreto N° 572-20 - Reglamentación LEY N° 7645. Régimen de Compre y
+          Contrate Trabajo Salteño.
+        </p>
+      </span>
+      <img
+        src="./assets/themes/publico/img/decreto.png"
+        title="Decreto N° 572-20 - Reglamentación LEY N° 7645"
+        width="275px"
+      >
+    </a>
+  </div>
+  <div class="banner">
+    <a href="http://www.dgrsalta.gov.ar" target="_blank" title="Dirección General de Rentas">
+      <span>
+        <p>Web Rentas de Salta</p>
+        <p><small>Click para visitar el Sitio Web</small></p>
+      </span>
+      <img src="./assets/themes/publico/img/dgr1.jpg" title="Dirección General de Rentas" width="275px">
+    </a>
+  </div>
+  <div class="banner">
+    <a href="http://registrodeproveedores.salta.gov.ar/" target="_blank" title="Unidad Central de Contrataciones">
+      <span>
+        <p>Web Unidad Central de Contrataciones</p>
+        <p><small>Clic para visitar el Sitio Web</small></p>
+      </span>
+      <img src="./assets/themes/publico/img/ucc.jpg" title="Unidad Central de Contrataciones" width="275px">
+    </a>
+  </div>
+  <div class="banner">
+    <a href="../normativas/ley8072conDctoReglamentario1319.pdf"
+      target="_blank"
+      title="Ley N° 8072 - Nueva Ley de Contrataciones de la Provincia de Salta y Decreto Reglamentario N° 1319/18"
+    >
+      <span>
+        <p>Ley N° 8072 - Nueva Ley de Contrataciones</p>
+          <p>
+            <small>
+              Ley de Contrataciones de la Provincia de Salta y Decreto Reglamentario N° 1319/18
+            </small>
+          </p>
+      </span>
+      <img
+        src="./assets/themes/publico/img/banner_ley_de_contrataciones.jpg"
+        title="Ley N° 8072 - Nueva Ley de Contrataciones de la Provincia de Salta y Decreto Reglamentario N° 1319/18"
+        width="275px"
+      >
+    </a>
+  </div>
+  <div class="banner">
+    <a href="http://www.economiasalta.gob.ar/ucc/contratista-de-obras-publicas/concursos-de-precios"
+      target="_blank"
+      title="Valor Jornal Básico informado por UCC"
+    >
+      <span>
+        <p>Valor Jornal Básico informado por UCC</p>
+      </span>
+      <img src="./assets/themes/publico/img/banner_valor_jornal.jpg"
+        title="Valor Jornal Básico informado por UCC"
+        width="275px"
+      >
+    </a>
+  </div>
+  <div class="banner">
+    <a target="_blank" title="Premio">
+    <span>
+      <p>Reconocimiento al Mérito</p>
+      <p><small>Premio Provincial a la Calidad e Innovación en la Gestión Pública año 2018</small></p>
+    </span>
+        <img src="./assets/themes/publico/img/banner_premio.jpg" title="Reconocimiento al Merito" width="275px">
+    </a>
+  </div>
+  <div class="banner">
+    <a
+      href="publico/encuesta/"
+      target="_blank"
+      title="Subsecretaría de Procedimientos de Contrataciones de Bienes y Servicios"
+    >
+      <span>
+        <p>Encuesta de Satisfacción</p>
+        <p><small>Clic para Realizar Encuesta</small></p>
+      </span>
+      <img
+        src="./assets/themes/publico/img/banner_encuesta.jpg"
+        title="Subsecretaría de Procedimientos de Contrataciones de Bienes y Servicios"
+        width="275px"
+      >
+    </a>
+  </div>
+</div>
+</div>
+                </div>
+                <footer id="footer">
+                    <div class="col-md-6">
+                      <p style="color: #FFF; text-align: center;"> Subsecretaría de Procedimientos de Contrataciones de Bienes y Servicios </p>
+                      <p style="text-align: center;">
+                        
+Centro Cívico B° Grand Bourg 3° Edificio - planta baja - Ala Este
+MAIL: spc@salta.gob.ar
+<br/>TEL(0387) 4324108 - SALTA CAPITAL
+<br/>Horario de Atención de corrido de 8:00 a 18:00 hrs.                      <p>
+                    </div>
+                    <div class="col-md-6 divider">
+                      <p>
+                        <a href="https://www.salta.gob.ar" target="_blank" title="Sitio Oficial del Gobierno de Salta" style="color: #FFF;">Gobierno de Salta</a><br/>
+                          Desarrollo: Subsecretaría de TIC                      </p>
+                      <p>
+                        Optimizado para resoluciones de 1024x768px o superior.<br/>
+                        Compatible con Mozilla Firefox 3+ / Opera 10+ / IE 9+ / Chrome 12+                      </p>
+                    </div>
+                    <div class="clearfloat"></div>
+                </footer>
+            </div>
+        </div>
+        <br />
+        <br />
+       <!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+       <script>window.jQuery || document.write('<script src="./assets/themes/publico/js/vendor/jquery-1.9.0.min.js"><\/script>')</script>-->
+       <script src="./assets/themes/publico/js/bootstrap.min.js"></script>
+       <script src="./assets/themes/publico/js/main.js"></script>
+       <script>
+           var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+           (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+           g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+           s.parentNode.insertBefore(g,s)}(document,'script'));
+       </script>
+    </body>
+</html>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.carousel').carousel({
+          interval: 5000
+        })
+        var menu = $('.menu-adapter');
+        var origOffsetY = menu.offset().top;
+
+        function scroll() {
+            if ($(window).scrollTop() >= origOffsetY) {
+                $('.menu-adapter').addClass('navbar-fixed-top');
+            } else {
+                $('.menu-adapter').removeClass('navbar-fixed-top');
+            }
+        }
+        document.onscroll = scroll;
+
+        $( "#buscar-publicaciones-antiguas" ).click(function() {
+            $('#frm-filtrobusqueda').submit();
+        });
+    });
+</script>

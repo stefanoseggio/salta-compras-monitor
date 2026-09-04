@@ -1,0 +1,61 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "actorSpecification": 1,
+    "title": "Dataset Schema",
+    "fields": {
+        "type": "object",
+        "properties": {
+            "id": { "title": "ID", "type": "string" },
+            "titulo": { "title": "Titulo", "type": "string" },
+            "tipoPublicacion": { "title": "Tipo Publicacion", "type": "string" },
+            "numeroPublicacion": { "title": "Numero Publicacion", "type": "string" },
+            "fechaApertura": { "title": "Fecha Apertura", "type": "string" },
+            "horaApertura": { "title": "Hora Apertura", "type": "string" },
+            "objeto": { "title": "Objeto", "type": "string" },
+            "organismo": { "title": "Organismo", "type": "string" },
+            "expediente": { "title": "Expediente", "type": "string" },
+            "consultaPliego": { "title": "Consulta y Adquisicion Pliego", "type": "string" },
+            "consultas": { "title": "Consultas", "type": "string" },
+            "detailUrl": { "title": "Detail URL", "type": "string" },
+            "detail": {
+                "title": "Detail",
+                "type": ["object", "null"],
+                "properties": {
+                    "fields": { "type": "object" },
+                    "pdfUrl": { "type": ["string", "null"] },
+                    "archivosAdjuntos": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "nombre": { "type": "string" },
+                                "url": { "type": "string" }
+                            }
+                        }
+                    }
+                }
+            },
+            "scrapedAt": { "title": "Scraped at", "type": "string" }
+        }
+    },
+    "views": {
+        "overview": {
+            "title": "Overview",
+            "transformation": {
+                "fields": ["id", "tipoPublicacion", "numeroPublicacion", "organismo", "objeto", "fechaApertura", "horaApertura"]
+            },
+            "display": {
+                "component": "table",
+                "columns": [
+                    { "label": "ID", "format": "text", "field": "id" },
+                    { "label": "Tipo", "format": "text", "field": "tipoPublicacion" },
+                    { "label": "Numero", "format": "text", "field": "numeroPublicacion" },
+                    { "label": "Organismo", "format": "text", "field": "organismo" },
+                    { "label": "Objeto", "format": "text", "field": "objeto" },
+                    { "label": "Apertura", "format": "text", "field": "fechaApertura" },
+                    { "label": "Hora", "format": "text", "field": "horaApertura" }
+                ]
+            }
+        }
+    }
+}

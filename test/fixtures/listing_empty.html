@@ -1,0 +1,528 @@
+
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+   <head>
+       <meta charset="utf-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+       <base href="https://compras.salta.gob.ar/" />
+       <link rel="shortcut icon" href="./assets/images/favicon.ico" type="image/x-icon">
+       <title>Bienvenidos al Portal de Compras y Contrataciones del Estado</title>
+       <meta name="description" content="">
+       <meta name="viewport" content="width=device-width,initial-scale=1">
+
+       <link rel="stylesheet" type="text/css" href="./assets/themes/piedra1.0/css/layout.contents.css"/>
+       <script type="text/javascript" src="./assets/libraries/jquery/jquery-1.11.1.min.js"></script>
+       <!--<link rel="stylesheet" type="text/css" href="./assets/css/ui-autocomplete-custom.css"/>-->
+       <!--<link rel="stylesheet" type="text/css" href="./assets/themes/publico/css/normalize-style.css"/>-->
+       <link rel="stylesheet" type="text/css" href="./assets/css/ui-autocomplete-custom.css"/>
+       <link rel="stylesheet" type="text/css" href="./assets/themes/publico/css/jqueryvalidation-validationEngine.jquery.css"/>
+
+       <!--<script type="text/javascript" src="./assets/libraries/modernizr-2.0.6/modernizr-2.0.6.min.js" ></script>-->
+       <!--<script type="text/javascript" src="./assets/libraries/jquery.md5/jquery.md5.js" ></script>-->
+
+       <!-- Autocomplete -->
+
+       <!-- ViaAjax -->
+       <script type="text/javascript" src="./assets/libraries/jqueryvalidation/js/languages/jquery.validationEngine-es.js"></script>
+       <script type="text/javascript" src="./assets/libraries/jqueryvalidation/js/jquery.validationEngine.js"></script>
+       <script type="text/javascript" src="./assets/libraries/jqueryviaajax/jquery.viaajax.js"></script>
+
+       <!-- GridviewHandler -->
+       <script type="text/javascript" src="assets/libraries/jquery.gridhandler/jquery.gridhandler.js"></script>
+
+       <!--<link rel="stylesheet" type="text/css" href="./assets/themes/publico/css/bootstrap.min.css"/>-->
+       <link rel="stylesheet" type="text/css" href="./assets/libraries/bootstrap-3.3.1/css/bootstrap.min.css"/>
+
+       <link rel="stylesheet" type="text/css" href="./assets/themes/publico/css/main.css"/>
+       <!--<script src="./assets/themes/publico/js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>-->
+       <!--<script src="./assets/themes/publico/js/bootstrap.min.js"></script>-->
+       <script src="./assets/libraries/bootstrap-3.3.1/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+       <!--[if lt IE 8]>
+           <div class="alert alert-error"><p class="chromeframe" style="text-align:center;">Estas utilizando un navegador <strong>desactualizado</strong>. Por favor <a href="http://browsehappy.com/">actualiza tu navegador</a> o <a href="http://www.google.com/chromeframe/?redirect=true">activa Google Chrome Frame</a> para mejorar tu experiencia de usuario.</p></div>
+       <![endif]-->
+        <header>
+          <div class="main-header">
+              <div class="container">
+                <div class="row">
+                  <img
+                    alt="Subsecretaría de Procedimiento de Contrataciones de Bienes y Servicios"
+                    src="./assets/themes/publico/img/logo-banner-salta.png"
+                    title="Subsecretaría de Procedimiento de Contrataciones de Bienes y Servicios"
+                    style="max-width:auto;max-height:153px;"
+                  />
+                </div>
+              </div>
+          </div>
+        </header>
+        <div class="container">
+        <!-- <div class="navbar navbar-inverse navbar-fixed-top">-->
+        <div class="menu-adapter navbar navbar-inner">
+            <div class="container">
+                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <div style="float: left">
+                    <ul id="navigation" class="nav-main">
+                        <li class="separador"><a href="#">Inicio</a></li>
+                        <li class="list separador">
+                           <a href="publico/home/contenido/1">Institucional</a>
+                           <ul class="nav-sub">
+                               <li><a href="publico/home/institucional/1">Quienes somos</a></li>
+                               <li><a href="publico/home/institucional/2">Mapa estratégico</a></li>
+                               <li><a href="publico/home/institucional/4">Gestión</a></li>
+                               <li><a href="publico/home/institucional/5">Actividades desarrolladas</a></li>
+                               <li><a href="publico/home/institucional/6">Políticas de Calidad</a></li>
+                           </ul>
+                        </li>
+                        <!--<li class="separador"><a href="publico/publicacionactual/cambiarvigencia">Publicaciones</a></li>-->
+                        <!--<li class="separador"><a href="publico/home/contenido/2">Proovedores</a></li>-->
+                        <!--<li class="separador"><a href="#">Novedades</a></li>-->
+                        <li class="separador"><a href="publico/home/contenido/4">Preguntas frecuentes</a></li>
+                        <li class="separador"><a href="publico/home/contenido/5">Normativa</a></li>
+                        <li><a href="publico/home/contenido/20">Contacto</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+                           <div class="main big-shadow">
+                                <hr style="height: 20px; margin: 0px;"/>
+                                <div class="row">
+                    <div class="col-md-8" style="padding-left: 20px;">
+                                                            <div class="box-titulos">
+                                    <h2 class="texto-titulo2">BUSCADOR DE PUBLICACI&Oacute;N</h2>
+                                    <div class="clearfloat">&nbsp;</div>
+                                    <div style="display: block; color: #333333; height: 40px;"><small>Ingrese y/o seleccione algunos de los siguientes datos para una realizar búsqueda más precisa.</small></div>
+                                </div>
+                                <div class="clearfloat">&nbsp;</div>
+                                <div class="clearfloat">&nbsp;</div>
+                                <div id="publicaciones">
+                                    <div class="forms">
+    <fieldset>
+        <form name="frm-filtrobusqueda" id="frm-filtrobusqueda" action="" method="post">
+            <div class="fila" style="width: 99%;">
+                <label for="publicacionVigencia">Vigencia:</label>
+                <select name="publicacionVigenciaInput"  name = "publicacionVigenciaInput" id="publicacionVigenciaInput" style="width: 100%; height:32px;" class="form-control">
+<option value="1" selected="selected">Vigentes</option>
+<option value="2">No vigentes</option>
+<option value="0">Todos</option>
+<option value="3">No vigentes (antes o igual al 11 de Noviembre del 2014)</option>
+</select>                <!--
+                                                            <div class="radio">
+                            <label><input type="radio" name="publicacionVigenciaInput" value="1" checked="checked">Vigentes</label>
+                        </div>
+                                                                                <div class="radio">
+                            <label><input type="radio" name="publicacionVigenciaInput" value="2">No vigentes</label>
+                        </div>
+                                                                                <div class="radio">
+                            <label><input type="radio" name="publicacionVigenciaInput" value="0">Todos</label>
+                        </div>
+                                                                                <div class="radio">
+                            <label><input type="radio" name="publicacionVigenciaInput" value="3">No vigentes (antes o igual al 11 de Noviembre del 2014)</label>
+                        </div>
+                                                    -->
+            </div>
+        </form>
+    </fieldset>
+</div>
+
+<div id="publicacionFiltro">
+    <div class="forms">
+    <form id="frmfiltrobusqueda" name="frmfiltrobusqueda" action="publico/publicacionactual/panelfiltrobusqueda" method="post">
+        <fieldset>
+            <div class="fila">
+                <label for="inIdPublicacionTipo"> Tipo Publicaci&oacute;n:</label>
+                <select name="inIdPublicacionTipo"  id = "inIdPublicacionTipo" style = "width: 320px; height:30px;" class="form-control">
+<option value="" selected="selected">Seleccione...</option>
+<option value="4">Concurso de Precios</option>
+<option value="3">Compras Directa</option>
+<option value="2">Contrataciones Directa</option>
+<option value="5">Licitación Nacional</option>
+<option value="1">Licitación Provincial</option>
+<option value="9">Pedido de Cotización</option>
+<option value="10">Concurso de Proyectos Integrales</option>
+<option value="11">Licitación Pública</option>
+<option value="12">Adjudicación Simple</option>
+<option value="13">Contratación Abreviada</option>
+<option value="14">Remate o Subasta Pública</option>
+</select>            </div>
+            <div class="fila">
+                <label for="vcPubNumero">N° Publicaci&oacute;n:</label>
+                <input type="text" name="vcPubNumero" id="vcPubNumero" value=""  placeholder="nnnn/aaaa" style="width:250px; height:30px;" class="form-control"/>
+            </div>
+            <div class="fila" style="width: 99%;">
+                <label for="vcPubObjeto">Objeto:</label>
+                <input type="text" name="vcPubObjeto" id="vcPubObjeto" value="" style="width: 575px; height:30px;" class="form-control"/>
+            </div>
+            <div class="fila">
+                <label for="inIdPublicacionTipo">Organismo Originante y Destino:</label>
+                <select name="inIdOrganismo"  id = "inIdOrganismo" style = "width: 575px; height:30px;" class="form-control">
+<option value="" selected="selected">Seleccione...</option>
+<option value="1931">Agencia de Contencion y Desarrollo Comunitario</option>
+<option value="1872">Agencia de Modernización</option>
+<option value="1871">A.M.T. de Salta</option>
+<option value="1864">Auditoria General de la Provincia</option>
+<option value="1858">Aviación Civil</option>
+<option value="1802">Aviación Civil de la Provincia</option>
+<option value="1874">Boletin Oficial</option>
+<option value="1898">Casa de Salta</option>
+<option value="1837">Centro de Convenciones S.E.</option>
+<option value="1927">Comite Provincial para la Prevencion de la Tortura y Otros</option>
+<option value="1848">COMPAÑIA SALTEÑA DE AGUA Y SANEAMIENTO S.A (Co.S.A.y Sa. S.A) AGUAS DEL NORTE</option>
+<option value="1803">Complejo Teleférico de Salta</option>
+<option value="1880">Coordinación Administrativa de Gobernación</option>
+<option value="1883">Coordinacion de Enlace y Relaciones Politicas de la Gobernacion</option>
+<option value="1851">Dirección de Recursos Energéticos y Mineros</option>
+<option value="1928">Dirección General de Estadísticas y Censo</option>
+<option value="1920">Direccion General de Infraestructura</option>
+<option value="1806">Dirección General de Rentas de Salta</option>
+<option value="1877">Direccion Industrial SPPS</option>
+<option value="1854">División de Contrataciones y Compras - Policía de Salta</option>
+<option value="1805">D.V.S</option>
+<option value="1863">E.N.R.E.J.A</option>
+<option value="1887">Ente General de Parques y Areas Industriales</option>
+<option value="1813">Ente Regulador de los Servicios Públicos</option>
+<option value="1844">Escribania de Gobierno</option>
+<option value="1892">Fiscalia de Estado</option>
+<option value="1912">Hospital de Aguaray Luis Adolfo Güemes</option>
+<option value="1939">Hospital de Colonia Santa Rosa</option>
+<option value="1925">Hospital de Coronel Moldes Luis Anzoategui</option>
+<option value="1916">Hospital de El Carril San Rafael</option>
+<option value="1911">Hospital de El Galpon San Francisco Solano</option>
+<option value="1910">Hospital de El Quebrachal Enrique Romero</option>
+<option value="1929">Hospital de Guachipas</option>
+<option value="1896">Hospital de Iruya Dr. Ramon Carrillo</option>
+<option value="1921">Hospital de Joaquin V. Gonzalez Dr. Oscar H. Costas</option>
+<option value="1935">Hospital de La Caldera</option>
+<option value="1901">Hospital del Carmen San Jose de Metan</option>
+<option value="1900">Hospital del Tala Santa Teresa</option>
+<option value="1908">Hospital de Morillo Coronel Juan Sola, AO. IV</option>
+<option value="1904">HOSPITAL DE NAZARENO</option>
+<option value="1808">Hospital de Niños Jesús de Praga</option>
+<option value="1885">Hospital de Oran San Vicente de Paul</option>
+<option value="1909">Hospital de Pichanal Dr Vicente Arroyabe</option>
+<option value="1942">Hospital de Rivadavia</option>
+<option value="1914">Hospital de San Antonio de los Cobres Nicolas Cayetano Pagano</option>
+<option value="1923">Hospital de Santa Victoria Este</option>
+<option value="1941">Hospital de Santa Victoria Oeste</option>
+<option value="1897">Hospital de Saravia Dr. Ramon Mario Villafañe</option>
+<option value="1873">Hospital de S.M. Dr Miguel Ragone</option>
+<option value="1809">Hospital Dr. Arturo Oñativia</option>
+<option value="1915">Hospital Dr. Rafael Villagran - Chicoana</option>
+<option value="1940">Hospital Francisco Herrera - Campo Quijano</option>
+<option value="1930">Hospital Gral. Mosconi</option>
+<option value="1906">Hospital J.A. Fernandez de Molinos</option>
+<option value="1895">Hospital Joaquin Castellanos General Guemes</option>
+<option value="1899">Hospital Juan Domingo Peron Tartagal</option>
+<option value="1943">Hospital La Poma</option>
+<option value="1936">Hospital La Viña</option>
+<option value="1902">Hospital Melchora de Cornejo Rosario de la Frontera</option>
+<option value="1905">Hospital Nuestra Señora del Rosario - CAFAYATE</option>
+<option value="1860">Hospital Papa Francisco</option>
+<option value="1810">Hospital Público Materno Infantil S.E.</option>
+<option value="1907">Hospital Salvador Mazza</option>
+<option value="1811">Hospital San Bernardo</option>
+<option value="1913">HOSPITAL SAN FRANCISCO SOLANO EL GALPON</option>
+<option value="1922">Hospital San José de Cachi "Dr. Arne Hoygaard"</option>
+<option value="1937">Hospital San Roque - Embarcacion</option>
+<option value="1933">HOSPITAL SANTA TERESITA - CERRILLOS</option>
+<option value="1812">Hospital Señor del Milagro</option>
+<option value="1807">H.P.G.D.  San Bernardo</option>
+<option value="1834">Instituto Provincial de Salud de Salta</option>
+<option value="1869">Instituto Provincial de Salud de Salta - Centro Operativo</option>
+<option value="1857">Instituto Provincial de Salud de Salta - Compras Generales</option>
+<option value="1856">Instituto Provincial de Salud de Salta - Farmacia</option>
+<option value="1855">Instituto Provincial de Salud de Salta - Protesis</option>
+<option value="1865">I.P.P.I.S</option>
+<option value="1866">I.P.V.</option>
+<option value="1839">Jefatura de Gabinete de Ministros</option>
+<option value="1841">JEFATURA DE GABINETE DE MINISTROS</option>
+<option value="1814">M.A.y D.S. - Secretaria de Recursos Hídricos</option>
+<option value="1815">Ministerio de Ambiente y Producción Y Trabajo</option>
+<option value="1838">Ministerio de Desarrollo Social</option>
+<option value="1840">Ministerio de Economia</option>
+<option value="1882">Ministerio de Economia y Servicios Publicos</option>
+<option value="1818">Ministerio de Educación, Ciencia y Tecnología</option>
+<option value="1893">Ministerio de Educación, Ciencia y Tecnología</option>
+<option value="1820">Ministerio de Gobierno Derechos Humanos yTrabajo</option>
+<option value="1821">Ministerio de Justicia</option>
+<option value="1835">Ministerio de la Primera Infancia</option>
+<option value="1816">Ministerio de Produccion  y Desarrollo Sustentable</option>
+<option value="1886">Ministerio de Producción y Desarrollo Sustentable</option>
+<option value="1822">Ministerio de Salud Pública</option>
+<option value="1823">Ministerio de Seguridad y Justicia</option>
+<option value="1824">Ministerio de Trabajo</option>
+<option value="1825">Ministerio de Turismo y Deportes</option>
+<option value="1853">Ministerio Publico de Salta</option>
+<option value="1934">Museo de Arqueología de Alta Montaña</option>
+<option value="1903">Observatorio de Violencia Contra las Mujeres</option>
+<option value="1827">Policía de la Provincia – Ministerio de Seguridad</option>
+<option value="1852">Recursos Energeticos y Mineros de Salta S.A.</option>
+<option value="1862">S.A.E.T.A</option>
+<option value="1891">S.A.F de Obras Públicas - Jefatura de Gabinete de Ministros</option>
+<option value="1867">S.A.F. Derechos Humanos y Justicia</option>
+<option value="1845">S.A.F. Economía</option>
+<option value="1842">S.A.F. Gobierno</option>
+<option value="1850">S.A.F. Ministerio de la Primera Infancia</option>
+<option value="1849">S.A.F. Trabajo y Empleo</option>
+<option value="1828">Salta Forestal S.A.</option>
+<option value="1918">SAMEC</option>
+<option value="1932">Secretaria de Coordinacion Interministerial</option>
+<option value="1879">Secretaría de Cultura</option>
+<option value="1847">Secretaria de Deportes</option>
+<option value="1889">Secretaria de Financiamiento</option>
+<option value="1890">Secretaria de Financiamiento</option>
+<option value="1817">SECRETARIA DE INGRESOS PUBLICOS</option>
+<option value="1876">Secretaría de Ingresos Públicos</option>
+<option value="1894">Secretaria de Modernizacion</option>
+<option value="1917">Secretaria de Personas Mayores</option>
+<option value="1924">Secretaria de Prensa</option>
+<option value="1846">Secretaria de Seguridad</option>
+<option value="1888">Secretaria de Trabajo</option>
+<option value="1829">Secretaria General de la Gobernación</option>
+<option value="1830">Servicio Penitenciario</option>
+<option value="1831">Sindicatura General de la Provincia</option>
+<option value="1870">Sub-Secretaria de Ceremonial y Audiencias</option>
+<option value="1926">Subsecretaría De Educación y Trabajo</option>
+<option value="1832">Sub-Secretaria de Financiamiento</option>
+<option value="1804">Subsecretaria del Parque Automotor</option>
+<option value="1875">Sub Secretaria del Registro del Estado Civil</option>
+<option value="1833">Tomografía Computada S.E.</option>
+<option value="1836">Tren a Las Nubes Servicio Ferroviario Turistico S.E.</option>
+<option value="1878">U.C.E.P.E.</option>
+<option value="1868">UGP Programa Incluir Salud Salta</option>
+<option value="1919">Unidad Coordinadora de Parques Urbanos</option>
+<option value="1843">Unidad Operativa de Contrataciones</option>
+<option value="1884">Unidad Tecnica Provincial (UTP)</option>
+<option value="1859">Universidad de la Administración Pública - UPATecO</option>
+</select>            </div>
+            <div class="fila">
+                <label for="vcPubExpediente">N&deg; Expediente (nnnnnnn-nnnnn/aaaa-n):</label>
+                <input type="text" name="vcPubExpediente" id="vcPubExpediente" value=""  placeholder="nnnnnnn-nnnnn/aaaa-n" style="width: 575px; height:30px;" class="form-control"/>
+            </div>
+        </fieldset>
+        <input type="hidden" id="vcForm" name="vcForm" value="frmfiltrobusqueda"/>
+        <input type="hidden" id="publicacionVigenciaInput" name="publicacionVigenciaInput" value="1"/>
+        <div class="clearfloat">&nbsp;</div>
+        <div class="buttons">
+            <input type="submit" id="btnEnviar" name="btnEnviar" class="clsSubmit" value="buscar"/>
+        </div>
+        <div class="clearfloat"> </div>
+    </form>
+</div>
+<div class="pagination"><a href="https://compras.salta.gob.ar/publico/publicacionactual/panelfiltrobusqueda/"><<</a>&nbsp;&nbsp;<a href="https://compras.salta.gob.ar/publico/publicacionactual/panelfiltrobusqueda/245">&lt;</a>&nbsp;<a href="https://compras.salta.gob.ar/publico/publicacionactual/panelfiltrobusqueda/235">48</a>&nbsp;<a href="https://compras.salta.gob.ar/publico/publicacionactual/panelfiltrobusqueda/240">49</a>&nbsp;<a href="https://compras.salta.gob.ar/publico/publicacionactual/panelfiltrobusqueda/245">50</a><span class="current">51</span></div>
+</div>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		$( "#publicacionVigenciaInput" ).bind( "change", function() {
+            var value = $("#publicacionVigenciaInput option:selected").val();
+            
+            switch (value) {
+                case '0':
+                    $('#frm-filtrobusqueda').attr('action', "publico/publicacionactual/cambiarvigencia/");
+                    break;
+                case '1':
+                    $('#frm-filtrobusqueda').attr('action', "publico/publicacionactual/cambiarvigencia/");
+                    break;
+                case '2':
+                    $('#frm-filtrobusqueda').attr('action', "publico/publicacionactual/cambiarvigencia/");
+                    break;
+                case '3':
+                    $('#frm-filtrobusqueda').attr('action', "publico/publicacion/cambiarvigencia/");
+                    break;
+            }
+            $("#frm-filtrobusqueda").submit();
+            e.preventDefault();
+        });
+
+        $('input[type=radio][name=publicacionVigenciaInput]').change(function() {
+            switch (this.value) {
+                case '0':
+                    $('#frm-filtrobusqueda').attr('action', "publico/publicacionactual/cambiarvigencia/");
+                    break;
+                case '1':
+                    $('#frm-filtrobusqueda').attr('action', "publico/publicacionactual/cambiarvigencia/");
+                    break;
+                case '2':
+                    $('#frm-filtrobusqueda').attr('action', "publico/publicacionactual/cambiarvigencia/");
+                    break;
+                case '3':
+                    $('#frm-filtrobusqueda').attr('action', "publico/publicacion/cambiarvigencia/");
+                    break;
+            }
+            $("#frm-filtrobusqueda").submit();
+            e.preventDefault();
+        });
+	});
+</script>                                                                    </div>
+                                                    <br />
+                    </div>
+                    <div class="col-md-4"><div class="container-banner">
+  <div class="box-titulos"><h2 class="texto-titulo2">ENLACES DESTACADOS</h2></div>
+  <div class="banner">
+    <a
+      href="../normativas/decreto_572-20_reglamentacion_ley_7645.pdf"
+      target="_blank"
+      title="Decreto N° 572-20 - Reglamentación LEY N° 7645. Régimen de Compre y Contrate Trabajo Salteño."
+    >
+      <span>
+        <p>
+          Decreto N° 572-20 - Reglamentación LEY N° 7645. Régimen de Compre y
+          Contrate Trabajo Salteño.
+        </p>
+      </span>
+      <img
+        src="./assets/themes/publico/img/decreto.png"
+        title="Decreto N° 572-20 - Reglamentación LEY N° 7645"
+        width="275px"
+      >
+    </a>
+  </div>
+  <div class="banner">
+    <a href="http://www.dgrsalta.gov.ar" target="_blank" title="Dirección General de Rentas">
+      <span>
+        <p>Web Rentas de Salta</p>
+        <p><small>Click para visitar el Sitio Web</small></p>
+      </span>
+      <img src="./assets/themes/publico/img/dgr1.jpg" title="Dirección General de Rentas" width="275px">
+    </a>
+  </div>
+  <div class="banner">
+    <a href="http://registrodeproveedores.salta.gov.ar/" target="_blank" title="Unidad Central de Contrataciones">
+      <span>
+        <p>Web Unidad Central de Contrataciones</p>
+        <p><small>Clic para visitar el Sitio Web</small></p>
+      </span>
+      <img src="./assets/themes/publico/img/ucc.jpg" title="Unidad Central de Contrataciones" width="275px">
+    </a>
+  </div>
+  <div class="banner">
+    <a href="../normativas/ley8072conDctoReglamentario1319.pdf"
+      target="_blank"
+      title="Ley N° 8072 - Nueva Ley de Contrataciones de la Provincia de Salta y Decreto Reglamentario N° 1319/18"
+    >
+      <span>
+        <p>Ley N° 8072 - Nueva Ley de Contrataciones</p>
+          <p>
+            <small>
+              Ley de Contrataciones de la Provincia de Salta y Decreto Reglamentario N° 1319/18
+            </small>
+          </p>
+      </span>
+      <img
+        src="./assets/themes/publico/img/banner_ley_de_contrataciones.jpg"
+        title="Ley N° 8072 - Nueva Ley de Contrataciones de la Provincia de Salta y Decreto Reglamentario N° 1319/18"
+        width="275px"
+      >
+    </a>
+  </div>
+  <div class="banner">
+    <a href="http://www.economiasalta.gob.ar/ucc/contratista-de-obras-publicas/concursos-de-precios"
+      target="_blank"
+      title="Valor Jornal Básico informado por UCC"
+    >
+      <span>
+        <p>Valor Jornal Básico informado por UCC</p>
+      </span>
+      <img src="./assets/themes/publico/img/banner_valor_jornal.jpg"
+        title="Valor Jornal Básico informado por UCC"
+        width="275px"
+      >
+    </a>
+  </div>
+  <div class="banner">
+    <a target="_blank" title="Premio">
+    <span>
+      <p>Reconocimiento al Mérito</p>
+      <p><small>Premio Provincial a la Calidad e Innovación en la Gestión Pública año 2018</small></p>
+    </span>
+        <img src="./assets/themes/publico/img/banner_premio.jpg" title="Reconocimiento al Merito" width="275px">
+    </a>
+  </div>
+  <div class="banner">
+    <a
+      href="publico/encuesta/"
+      target="_blank"
+      title="Subsecretaría de Procedimientos de Contrataciones de Bienes y Servicios"
+    >
+      <span>
+        <p>Encuesta de Satisfacción</p>
+        <p><small>Clic para Realizar Encuesta</small></p>
+      </span>
+      <img
+        src="./assets/themes/publico/img/banner_encuesta.jpg"
+        title="Subsecretaría de Procedimientos de Contrataciones de Bienes y Servicios"
+        width="275px"
+      >
+    </a>
+  </div>
+</div>
+</div>
+                </div>
+                <footer id="footer">
+                    <div class="col-md-6">
+                      <p style="color: #FFF; text-align: center;"> Subsecretaría de Procedimientos de Contrataciones de Bienes y Servicios </p>
+                      <p style="text-align: center;">
+                        
+Centro Cívico B° Grand Bourg 3° Edificio - planta baja - Ala Este
+MAIL: spc@salta.gob.ar
+<br/>TEL(0387) 4324108 - SALTA CAPITAL
+<br/>Horario de Atención de corrido de 8:00 a 18:00 hrs.                      <p>
+                    </div>
+                    <div class="col-md-6 divider">
+                      <p>
+                        <a href="https://www.salta.gob.ar" target="_blank" title="Sitio Oficial del Gobierno de Salta" style="color: #FFF;">Gobierno de Salta</a><br/>
+                          Desarrollo: Subsecretaría de TIC                      </p>
+                      <p>
+                        Optimizado para resoluciones de 1024x768px o superior.<br/>
+                        Compatible con Mozilla Firefox 3+ / Opera 10+ / IE 9+ / Chrome 12+                      </p>
+                    </div>
+                    <div class="clearfloat"></div>
+                </footer>
+            </div>
+        </div>
+        <br />
+        <br />
+       <!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+       <script>window.jQuery || document.write('<script src="./assets/themes/publico/js/vendor/jquery-1.9.0.min.js"><\/script>')</script>-->
+       <script src="./assets/themes/publico/js/bootstrap.min.js"></script>
+       <script src="./assets/themes/publico/js/main.js"></script>
+       <script>
+           var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+           (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+           g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+           s.parentNode.insertBefore(g,s)}(document,'script'));
+       </script>
+    </body>
+</html>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.carousel').carousel({
+          interval: 5000
+        })
+        var menu = $('.menu-adapter');
+        var origOffsetY = menu.offset().top;
+
+        function scroll() {
+            if ($(window).scrollTop() >= origOffsetY) {
+                $('.menu-adapter').addClass('navbar-fixed-top');
+            } else {
+                $('.menu-adapter').removeClass('navbar-fixed-top');
+            }
+        }
+        document.onscroll = scroll;
+
+        $( "#buscar-publicaciones-antiguas" ).click(function() {
+            $('#frm-filtrobusqueda').submit();
+        });
+    });
+</script>

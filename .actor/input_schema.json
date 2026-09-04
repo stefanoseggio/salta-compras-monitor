@@ -1,0 +1,21 @@
+{
+    "$schema": "https://apify.com/schemas/v1/input.ide.json",
+    "title": "Salta Compras Monitor Configuration",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "fetchDetail": {
+            "title": "Fetch full detail per publication",
+            "type": "boolean",
+            "description": "When enabled (default), fetches each publication's detail page for the full field set (organismo gestor, costo pliego, lugar de entrega, when present) plus attached document links. Disable for a faster, listing-only run.",
+            "default": true
+        },
+        "maxItems": {
+            "title": "Max publications to extract",
+            "type": "integer",
+            "description": "Hard cap on the number of publications returned this run. The portal serves ~250 currently-open (vigentes) publications at a time, 5 per page.",
+            "default": 100,
+            "minimum": 1
+        }
+    }
+}
