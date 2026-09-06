@@ -46,7 +46,9 @@ describe('parseDetail', () => {
         expect(detail.fields.Objeto).toBe('adquisicion articulos de limpieza');
         expect(detail.fields['Organismo Originante y Destino']).toBe('E.N.R.E.J.A');
         expect(detail.archivosAdjuntos).toHaveLength(2);
-        expect(detail.archivosAdjuntos[0].nombre).toBe('Pliego de condiciones generales y especificaciones técnicas - limpieza');
+        expect(detail.archivosAdjuntos[0].nombre).toBe(
+            'Pliego de condiciones generales y especificaciones técnicas - limpieza',
+        );
         expect(detail.archivosAdjuntos[0].url).not.toBe(detail.archivosAdjuntos[1].url);
     });
 });

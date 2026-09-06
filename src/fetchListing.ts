@@ -50,7 +50,9 @@ export async function fetchListing(maxItems: number): Promise<ListingItem[]> {
             results.push(item);
             added += 1;
         }
-        log.info(`offset=${offset}: ${items.length} publicaciones (${added} nuevas, ${items.length - added} ya vistas en una pagina anterior).`);
+        log.info(
+            `offset=${offset}: ${items.length} publicaciones (${added} nuevas, ${items.length - added} ya vistas en una pagina anterior).`,
+        );
     }
 
     return results;

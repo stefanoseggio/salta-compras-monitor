@@ -1,6 +1,10 @@
+export type DateRangeOption = '24h' | '7d' | '30d';
+
 export interface ActorInput {
     fetchDetail: boolean;
     maxItems: number;
+    onlyNew: boolean;
+    dateRange?: DateRangeOption;
 }
 
 // One card from the listing page (`article.publicacion`). Every listing
@@ -38,7 +42,29 @@ export interface PublicacionDetail {
     archivosAdjuntos: ArchivoAdjunto[];
 }
 
-export interface PublicacionRecord extends ListingItem {
+// Output envelope: `record_id` and `source_url` replace `ListingItem`'s `id`
+// and `detailUrl` (same values, standardized names - see AGENTS.md for why
+// keeping both would be a sloppy duplicate), and `event_type` / `scraped_at`
+// / `is_new` are new. Deliberately NOT `extends ListingItem` for this
+// reason - the fields below are listed explicitly instead of spread, so
+// `id`/`detailUrl` can't sneak back in as an accidental duplicate.
+export interface PublicacionRecord {
+    titulo: string;
+    tipoPublicacion: string;
+    numeroPublicacion: string;
+    fechaApertura: string;
+    horaApertura: string;
+    objeto: string;
+    organismo: string;
+    expediente: string;
+    consultaPliego: string;
+    consultas: string;
     detail: PublicacionDetail | null;
-    scrapedAt: string;
+
+    // Delta Engine output envelope (see AGENTS.md):
+    record_id: string;
+    event_type: string;
+    scraped_at: string;
+    is_new: boolean;
+    source_url: string;
 }

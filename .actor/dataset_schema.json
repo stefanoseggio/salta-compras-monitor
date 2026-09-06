@@ -5,7 +5,7 @@
     "fields": {
         "type": "object",
         "properties": {
-            "id": { "title": "ID", "type": "string" },
+            "record_id": { "title": "Record ID", "type": "string" },
             "titulo": { "title": "Titulo", "type": "string" },
             "tipoPublicacion": { "title": "Tipo Publicacion", "type": "string" },
             "numeroPublicacion": { "title": "Numero Publicacion", "type": "string" },
@@ -16,7 +16,9 @@
             "expediente": { "title": "Expediente", "type": "string" },
             "consultaPliego": { "title": "Consulta y Adquisicion Pliego", "type": "string" },
             "consultas": { "title": "Consultas", "type": "string" },
-            "detailUrl": { "title": "Detail URL", "type": "string" },
+            "event_type": { "title": "Event Type", "type": "string" },
+            "is_new": { "title": "Is New", "type": "boolean" },
+            "source_url": { "title": "Source URL", "type": "string" },
             "detail": {
                 "title": "Detail",
                 "type": ["object", "null"],
@@ -35,25 +37,35 @@
                     }
                 }
             },
-            "scrapedAt": { "title": "Scraped at", "type": "string" }
+            "scraped_at": { "title": "Scraped at", "type": "string" }
         }
     },
     "views": {
         "overview": {
             "title": "Overview",
             "transformation": {
-                "fields": ["id", "tipoPublicacion", "numeroPublicacion", "organismo", "objeto", "fechaApertura", "horaApertura"]
+                "fields": [
+                    "record_id",
+                    "tipoPublicacion",
+                    "numeroPublicacion",
+                    "organismo",
+                    "objeto",
+                    "fechaApertura",
+                    "horaApertura",
+                    "is_new"
+                ]
             },
             "display": {
                 "component": "table",
                 "columns": [
-                    { "label": "ID", "format": "text", "field": "id" },
+                    { "label": "ID", "format": "text", "field": "record_id" },
                     { "label": "Tipo", "format": "text", "field": "tipoPublicacion" },
                     { "label": "Numero", "format": "text", "field": "numeroPublicacion" },
                     { "label": "Organismo", "format": "text", "field": "organismo" },
                     { "label": "Objeto", "format": "text", "field": "objeto" },
                     { "label": "Apertura", "format": "text", "field": "fechaApertura" },
-                    { "label": "Hora", "format": "text", "field": "horaApertura" }
+                    { "label": "Hora", "format": "text", "field": "horaApertura" },
+                    { "label": "Nuevo", "format": "boolean", "field": "is_new" }
                 ]
             }
         }

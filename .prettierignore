@@ -1,3 +1,9 @@
 .prettierignore
 dist
 node_modules
+
+# Pinned live-site captures used as test fixtures (see test/parsers/*.test.ts
+# and AGENTS.md's "verified live" notes) - keep them byte-for-byte as
+# captured, not reformatted, so they stay honest evidence of the real
+# site's actual markup.
+test/fixtures

@@ -16,6 +16,19 @@
             "description": "Hard cap on the number of publications returned this run. The portal serves ~250 currently-open (vigentes) publications at a time, 5 per page.",
             "default": 100,
             "minimum": 1
+        },
+        "onlyNew": {
+            "title": "Only new records (delta mode)",
+            "type": "boolean",
+            "description": "Delta mode for daily/recurring monitoring: returns only publications not returned by a previous run. Seen ids are persisted across runs in a named key-value store unique to this actor (\"salta-compras-monitor-delta-state\"), not the run's own default store (which is isolated per run and would not survive between scheduled runs). Every record still carries is_new, so a normal (onlyNew=false) run also tells you which of its results are new. Pagination is NOT stopped early once already-seen records are reached: this actor's listing is sorted by Fecha/Hora Apertura (the bid-opening deadline), not by when a publication was created, so a genuinely new publication can appear on any page - onlyNew filters after a full fetch up to maxItems instead of short-circuiting it. See AGENTS.md for the live evidence behind this.",
+            "default": false
+        },
+        "dateRange": {
+            "title": "Filter by opening-date window",
+            "type": "string",
+            "description": "Filters results to publications whose own Fecha/Hora Apertura (bid-opening deadline - the only date field this source exposes anywhere, listing or detail; there is no separate publication date) falls within the given window. For the \"vigentes\" (currently open) publications this actor covers, that date is almost always in the FUTURE relative to when this actor runs, so this is an upcoming-deadline filter (\"opens within the next 24h/7d/30d\"), not a \"published in the last N\" filter. Independent of onlyNew.",
+            "enum": ["24h", "7d", "30d"],
+            "enumTitles": ["Next 24 hours", "Next 7 days", "Next 30 days"]
         }
     }
 }
