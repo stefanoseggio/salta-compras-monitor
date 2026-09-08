@@ -1,0 +1,1 @@
+{"version":3,"file":"fetchListing.d.ts","sourceRoot":"","sources":["../src/fetchListing.ts"],"names":[],"mappings":"AAKA,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,YAAY,CAAC;AAwB9C,MAAM,WAAW,aAAa;IAC1B,KAAK,EAAE,WAAW,EAAE,CAAC;IACrB;;;;;;;OAOG;IACH,mBAAmB,EAAE,OAAO,CAAC;CAChC;AAED,wBAAsB,YAAY,CAAC,QAAQ,EAAE,MAAM,GAAG,OAAO,CAAC,aAAa,CAAC,CAsC3E"}

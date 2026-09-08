@@ -7,18 +7,32 @@ export const DELTA_STATE_STORE_NAME = 'salta-compras-monitor-delta-state';
 
 const STATE_KEY = 'STATE';
 
-// A few thousand is enough to cover every publication ever recorded during
-// a normal recurring-run cadence without the state growing unbounded - see
-// the sort-before-cap note below for why this number, not fetch order,
-// decides which ids survive a trim.
+// A few thousand is enough to cover every publication ever recorded during a normal
+// recurring-run cadence without the state growing unbounded.
 const MAX_SEEN_IDS = 5000;
 
+/**
+ * v2: a small snapshot per id, not a bare seen-id list. `hash` is what makes UPDATED
+ * detection possible (compare against fingerprintOf() on a later run). The four display
+ * fields are kept so a CLOSED event (see src/delta.ts) - reported for a previously-seen id
+ * that is absent from a later COMPLETE walk, i.e. genuinely no longer vigente - can still
+ * name what closed, since the publication itself is presumably no longer fetchable once it
+ * has left the vigentes list.
+ */
+export interface SeenEntry {
+    hash: string;
+    titulo: string;
+    tipoPublicacion: string;
+    numeroPublicacion: string;
+    organismo: string;
+}
+
 export interface DeltaState {
-    seenIds: string[];
+    entries: Record<string, SeenEntry>;
     lastRunAt: string | null;
 }
 
-const EMPTY_STATE: DeltaState = { seenIds: [], lastRunAt: null };
+const EMPTY_STATE: DeltaState = { entries: {}, lastRunAt: null };
 
 // Minimal shape actually used from apify's KeyValueStore, so tests can pass
 // a plain in-memory fake instead of touching real Apify storage.
@@ -31,39 +45,50 @@ async function defaultStore(): Promise<DeltaStateStore> {
     return Actor.openKeyValueStore(DELTA_STATE_STORE_NAME);
 }
 
-export async function loadDeltaState(store?: DeltaStateStore): Promise<DeltaState> {
-    const kv = store ?? (await defaultStore());
-    const state = await kv.getValue<DeltaState>(STATE_KEY);
-    if (!state || !Array.isArray(state.seenIds)) return { ...EMPTY_STATE, seenIds: [] };
-    return state;
+function isValidState(value: unknown): value is DeltaState {
+    if (!value || typeof value !== 'object') return false;
+    const v = value as Partial<DeltaState>;
+    return typeof v.entries === 'object' && v.entries !== null;
 }
 
-// Merges this run's observed ids (every id fetchListing walked past, not
-// just the ones that passed onlyNew/dateRange filters - a filtered-out
-// record still needs to count as "seen" or a later onlyNew run would
-// re-surface it) into the previously persisted set, then caps it.
-//
-// Capped by DESCENDING NUMERIC id, not by fetch/page order. This source's
-// listing sorts by Fecha/Hora Apertura (an upcoming bid-opening deadline),
-// which is unrelated to when a publication was created (verified live
-// 2026-09-06: offset=245 held publications with lower ids than offset=0's,
-// simply because their opening date happens to fall later - see
-// AGENTS.md). The publication id itself is the only field that plausibly
-// tracks creation order (it looks like a plain auto-increment primary key),
-// so trimming keeps the highest-numbered - i.e. most recently created, and
-// therefore most likely to still be open and worth de-duplicating against -
-// ids rather than an arbitrary slice of fetch order.
+export async function loadDeltaState(store?: DeltaStateStore): Promise<DeltaState> {
+    const kv = store ?? (await defaultStore());
+    const state = await kv.getValue<unknown>(STATE_KEY);
+    // A v1-shaped state ({ seenIds: string[] }) fails isValidState and is treated as absent -
+    // the first v2 run on an existing schedule re-baselines rather than crashing on the old
+    // shape. Disclosed in CHANGELOG.md.
+    return isValidState(state) ? state : { ...EMPTY_STATE };
+}
+
+/**
+ * Merges this run's observed (id, entry) pairs into the previously persisted state, then
+ * caps it. Capped by DESCENDING NUMERIC id, not by fetch/page order - see AGENTS.md for why
+ * this source's listing order (sorted by upcoming bid-opening deadline, not creation) makes
+ * the id itself the only field that plausibly tracks creation order.
+ *
+ * Every id fetchListing walked past this run (not just the ones that passed onlyNew/dateRange)
+ * must be included in `observed` - a record filtered out today must still be recognized as
+ * seen by a future onlyNew run, or it would incorrectly resurface.
+ */
 export async function saveDeltaState(
-    previousSeenIds: string[],
-    observedIds: string[],
+    previous: DeltaState,
+    observed: { id: string; entry: SeenEntry }[],
     lastRunAt: string,
     store?: DeltaStateStore,
 ): Promise<DeltaState> {
     const kv = store ?? (await defaultStore());
-    const merged = Array.from(new Set([...previousSeenIds, ...observedIds]));
-    merged.sort((a, b) => Number(b) - Number(a));
-    const capped = merged.slice(0, MAX_SEEN_IDS);
-    const next: DeltaState = { seenIds: capped, lastRunAt };
+
+    const entries: Record<string, SeenEntry> = { ...previous.entries };
+    for (const { id, entry } of observed) entries[id] = entry;
+
+    const cappedIds = Object.keys(entries)
+        .sort((a, b) => Number(b) - Number(a))
+        .slice(0, MAX_SEEN_IDS);
+
+    const cappedEntries: Record<string, SeenEntry> = {};
+    for (const id of cappedIds) cappedEntries[id] = entries[id];
+
+    const next: DeltaState = { entries: cappedEntries, lastRunAt };
     await kv.setValue(STATE_KEY, next);
     return next;
 }

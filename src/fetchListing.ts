@@ -27,7 +27,20 @@ const PAGE_SIZE = 5;
 // too). De-duplicating by id is mandatory when walking multiple pages; see
 // AGENTS.md for why this also means a multi-page walk can't be guaranteed
 // perfectly gap-free.
-export async function fetchListing(maxItems: number): Promise<ListingItem[]> {
+export interface ListingResult {
+    items: ListingItem[];
+    /**
+     * True when maxItems cut the walk short (the loop stopped because the cap was reached,
+     * not because the site ran out of pages). False means this walk reached a genuine
+     * zero-<article> page - i.e. it is a complete census of every currently-vigente
+     * publication, not a partial one. Used by src/main.ts to decide whether it is safe to
+     * infer "no longer vigente" (CLOSED) for a previously-seen id absent from this walk - see
+     * AGENTS.md "Delta engine v2": that inference is only trustworthy against a complete walk.
+     */
+    truncatedByMaxItems: boolean;
+}
+
+export async function fetchListing(maxItems: number): Promise<ListingResult> {
     const results: ListingItem[] = [];
     const seenIds = new Set<string>();
 
@@ -55,5 +68,14 @@ export async function fetchListing(maxItems: number): Promise<ListingItem[]> {
         );
     }
 
-    return results;
+    // The ONLY way this loop ends with fewer than maxItems results is the natural
+    // zero-<article> stop condition above - the for-loop's own condition
+    // (`results.length < maxItems`) guarantees it never exits any other way while still
+    // short of the cap. So `results.length < maxItems` is conclusive proof of a complete
+    // census; `results.length === maxItems` is NOT conclusive proof of the opposite (the
+    // exact page that filled the cap might also have been the last real page) - when unsure,
+    // this reports truncated, which is the safe direction for src/main.ts's CLOSED inference.
+    const truncatedByMaxItems = results.length >= maxItems;
+
+    return { items: results, truncatedByMaxItems };
 }

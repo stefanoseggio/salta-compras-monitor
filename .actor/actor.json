@@ -2,9 +2,9 @@
     "$schema": "https://apify.com/schemas/v1/actor.ide.json",
     "actorSpecification": 1,
     "name": "salta-compras-monitor",
-    "title": "Salta Compras Monitor",
+    "title": "Salta Tenders Scraper & Monitor",
     "description": "Extracts public tenders and contract awards (contrataciones, adjudicaciones) from the Province of Salta, Argentina's official public procurement portal, with organism, expediente and opening-date detail per process.",
-    "version": "1.0",
+    "version": "2.0",
     "buildTag": "latest",
     "minMemoryMbytes": 256,
     "maxMemoryMbytes": 512,
@@ -17,5 +17,6 @@
     "storages": {
         "dataset": "./dataset_schema.json"
     },
+    "changelog": "../CHANGELOG.md",
     "dockerfile": "../Dockerfile"
 }

@@ -16,8 +16,17 @@
             "expediente": { "title": "Expediente", "type": "string" },
             "consultaPliego": { "title": "Consulta y Adquisicion Pliego", "type": "string" },
             "consultas": { "title": "Consultas", "type": "string" },
-            "event_type": { "title": "Event Type", "type": "string" },
+            "event_type": {
+                "title": "Event Type",
+                "type": "string",
+                "description": "NEW_LISTING (never seen before), UPDATED (a fingerprinted field changed), UNCHANGED (only when Only new is off) or CLOSED (no longer vigente - closed, resolved, expired or withdrawn; the source does not say which)."
+            },
             "is_new": { "title": "Is New", "type": "boolean" },
+            "contentHash": {
+                "title": "Content Hash",
+                "type": "string",
+                "description": "sha1 fingerprint of this record's changeable fields - used to detect UPDATED between runs."
+            },
             "source_url": { "title": "Source URL", "type": "string" },
             "detail": {
                 "title": "Detail",
@@ -66,6 +75,25 @@
                     { "label": "Apertura", "format": "text", "field": "fechaApertura" },
                     { "label": "Hora", "format": "text", "field": "horaApertura" },
                     { "label": "Nuevo", "format": "boolean", "field": "is_new" }
+                ]
+            }
+        },
+        "changes": {
+            "title": "Status changes & amendments",
+            "transformation": {
+                "fields": ["record_id", "event_type", "tipoPublicacion", "organismo", "objeto", "fechaApertura", "source_url", "scraped_at"]
+            },
+            "display": {
+                "component": "table",
+                "columns": [
+                    { "label": "ID", "format": "text", "field": "record_id" },
+                    { "label": "Evento", "format": "text", "field": "event_type" },
+                    { "label": "Tipo", "format": "text", "field": "tipoPublicacion" },
+                    { "label": "Organismo", "format": "text", "field": "organismo" },
+                    { "label": "Objeto", "format": "text", "field": "objeto" },
+                    { "label": "Apertura", "format": "text", "field": "fechaApertura" },
+                    { "label": "URL", "format": "link", "field": "source_url" },
+                    { "label": "Detectado", "format": "date", "field": "scraped_at" }
                 ]
             }
         }

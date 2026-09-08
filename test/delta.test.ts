@@ -5,32 +5,94 @@ import * as cheerio from 'cheerio';
 import { describe, expect, it } from 'vitest';
 
 import { isWithinDateRange, parseFechaApertura, selectRecordsToProcess } from '../src/delta.js';
+import { fingerprintOf } from '../src/fingerprint.js';
 import { parseListing } from '../src/parsers/listing.js';
+import type { DeltaState, SeenEntry } from '../src/state.js';
+import type { ListingItem, PublicacionDetail } from '../src/types.js';
 
 const fixturesDir = fileURLToPath(new URL('fixtures', import.meta.url));
 
-function loadListingFixture(name: string) {
+function loadListingFixture(name: string): ListingItem[] {
     const $ = cheerio.load(readFileSync(`${fixturesDir}/${name}`, 'utf-8'));
     return parseListing($);
 }
 
-describe('selectRecordsToProcess', () => {
-    it('marks every record is_new=true on a cold run (empty seen-set)', () => {
+function withoutDetail(items: ListingItem[]): { item: ListingItem; detail: PublicacionDetail | null }[] {
+    return items.map((item) => ({ item, detail: null }));
+}
+
+const EMPTY_STATE: DeltaState = { entries: {}, lastRunAt: null };
+
+function entryFor(item: ListingItem, hash?: string): SeenEntry {
+    return {
+        hash: hash ?? fingerprintOf(item, null),
+        titulo: item.titulo,
+        tipoPublicacion: item.tipoPublicacion,
+        numeroPublicacion: item.numeroPublicacion,
+        organismo: item.organismo,
+    };
+}
+
+describe('selectRecordsToProcess - event classification', () => {
+    it('classifies every record as NEW_LISTING on a cold run (empty state)', () => {
         const items = loadListingFixture('listing_offset0.html');
-        const selected = selectRecordsToProcess(items, new Set(), {
+        const selected = selectRecordsToProcess(withoutDetail(items), EMPTY_STATE, {
             onlyNew: false,
             now: new Date('2026-09-07T00:00:00Z'),
         });
 
         expect(selected).toHaveLength(items.length);
-        expect(selected.every((r) => r.isNew)).toBe(true);
+        expect(selected.every((r) => r.eventType === 'NEW_LISTING' && r.isNew)).toBe(true);
     });
 
-    it('onlyNew with a fully-seen state returns zero records', () => {
+    it('classifies a known id with an unchanged fingerprint as UNCHANGED - delivered only when onlyNew=false', () => {
         const items = loadListingFixture('listing_offset0.html');
-        const seenIds = new Set(items.map((i) => i.id));
+        const target = items[0];
+        const state: DeltaState = { entries: { [target.id]: entryFor(target) }, lastRunAt: null };
 
-        const selected = selectRecordsToProcess(items, seenIds, {
+        const full = selectRecordsToProcess(withoutDetail([target]), state, { onlyNew: false, now: new Date('2026-09-07T00:00:00Z') });
+        expect(full).toHaveLength(1);
+        expect(full[0].eventType).toBe('UNCHANGED');
+        expect(full[0].isNew).toBe(false);
+
+        const delta = selectRecordsToProcess(withoutDetail([target]), state, { onlyNew: true, now: new Date('2026-09-07T00:00:00Z') });
+        expect(delta).toHaveLength(0);
+    });
+
+    it('classifies a known id with a changed fingerprint as UPDATED', () => {
+        const items = loadListingFixture('listing_offset0.html');
+        const target = items[0];
+        const state: DeltaState = { entries: { [target.id]: entryFor(target, 'a-hash-that-will-never-match') }, lastRunAt: null };
+
+        const selected = selectRecordsToProcess(withoutDetail([target]), state, { onlyNew: true, now: new Date('2026-09-07T00:00:00Z') });
+        expect(selected).toHaveLength(1);
+        expect(selected[0].eventType).toBe('UPDATED');
+        expect(selected[0].isNew).toBe(false);
+    });
+
+    it('eventTypes restricts delivery to the requested subset', () => {
+        const items = loadListingFixture('listing_offset0.html');
+        const [a, b] = items; // a: unseen -> NEW_LISTING; b: seen, changed -> UPDATED
+        const state: DeltaState = { entries: { [b.id]: entryFor(b, 'stale-hash') }, lastRunAt: null };
+
+        const selected = selectRecordsToProcess(withoutDetail([a, b]), state, {
+            onlyNew: false,
+            eventTypes: ['UPDATED'],
+            now: new Date('2026-09-07T00:00:00Z'),
+        });
+
+        expect(selected).toHaveLength(1);
+        expect(selected[0].item.id).toBe(b.id);
+        expect(selected[0].eventType).toBe('UPDATED');
+    });
+});
+
+describe('selectRecordsToProcess - onlyNew', () => {
+    it('onlyNew with a fully-seen, unchanged state returns zero records', () => {
+        const items = loadListingFixture('listing_offset0.html');
+        const entries = Object.fromEntries(items.map((i) => [i.id, entryFor(i)]));
+
+        const selected = selectRecordsToProcess(withoutDetail(items), { entries, lastRunAt: null }, {
             onlyNew: true,
             now: new Date('2026-09-07T00:00:00Z'),
         });
@@ -40,12 +102,9 @@ describe('selectRecordsToProcess', () => {
 
     it('a full (onlyNew=false) run still reports is_new correctly per record against a partially-seen state', () => {
         const items = loadListingFixture('listing_offset0.html');
-        const seenIds = new Set([items[0].id]);
+        const state: DeltaState = { entries: { [items[0].id]: entryFor(items[0]) }, lastRunAt: null };
 
-        const selected = selectRecordsToProcess(items, seenIds, {
-            onlyNew: false,
-            now: new Date('2026-09-07T00:00:00Z'),
-        });
+        const selected = selectRecordsToProcess(withoutDetail(items), state, { onlyNew: false, now: new Date('2026-09-07T00:00:00Z') });
 
         // Nothing is dropped by is_new bookkeeping alone.
         expect(selected).toHaveLength(items.length);
@@ -53,44 +112,46 @@ describe('selectRecordsToProcess', () => {
         expect(selected.filter((r) => r.isNew)).toHaveLength(items.length - 1);
     });
 
-    it('onlyNew returns only the unseen subset when the seen-set is partial', () => {
+    it('onlyNew returns only the unseen/changed subset when the state is partial', () => {
         const items = loadListingFixture('listing_offset0.html');
-        const seenIds = new Set([items[0].id, items[1].id]);
+        const state: DeltaState = {
+            entries: { [items[0].id]: entryFor(items[0]), [items[1].id]: entryFor(items[1]) },
+            lastRunAt: null,
+        };
 
-        const selected = selectRecordsToProcess(items, seenIds, {
-            onlyNew: true,
-            now: new Date('2026-09-07T00:00:00Z'),
-        });
+        const selected = selectRecordsToProcess(withoutDetail(items), state, { onlyNew: true, now: new Date('2026-09-07T00:00:00Z') });
 
         expect(selected).toHaveLength(items.length - 2);
         expect(selected.every((r) => r.isNew)).toBe(true);
         expect(selected.some((r) => r.item.id === items[0].id)).toBe(false);
     });
+});
 
-    it('dateRange excludes records whose opening date falls outside the window', () => {
+describe('selectRecordsToProcess - dateRange', () => {
+    it('excludes records whose opening date falls outside the window', () => {
         const items = loadListingFixture('listing_offset0.html'); // all fechaApertura = 07/09/2026, 09:00/09:30
         const farNow = new Date('2026-01-01T00:00:00Z'); // months before the fixture's opening date
 
-        const selected = selectRecordsToProcess(items, new Set(), { onlyNew: false, dateRange: '24h', now: farNow });
+        const selected = selectRecordsToProcess(withoutDetail(items), EMPTY_STATE, { onlyNew: false, dateRange: '24h', now: farNow });
 
         expect(selected).toHaveLength(0);
     });
 
-    it('dateRange includes records whose opening date falls inside the window', () => {
+    it('includes records whose opening date falls inside the window', () => {
         const items = loadListingFixture('listing_offset0.html');
         const closeNow = new Date('2026-09-06T12:00:00Z'); // within 24h of 07/09/2026 09:00/09:30 UTC
 
-        const selected = selectRecordsToProcess(items, new Set(), { onlyNew: false, dateRange: '24h', now: closeNow });
+        const selected = selectRecordsToProcess(withoutDetail(items), EMPTY_STATE, { onlyNew: false, dateRange: '24h', now: closeNow });
 
         expect(selected).toHaveLength(items.length);
     });
 
     it('dateRange and onlyNew apply independently and can combine', () => {
         const items = loadListingFixture('listing_offset0.html');
-        const seenIds = new Set([items[0].id]);
+        const state: DeltaState = { entries: { [items[0].id]: entryFor(items[0]) }, lastRunAt: null };
         const closeNow = new Date('2026-09-06T12:00:00Z');
 
-        const selected = selectRecordsToProcess(items, seenIds, { onlyNew: true, dateRange: '24h', now: closeNow });
+        const selected = selectRecordsToProcess(withoutDetail(items), state, { onlyNew: true, dateRange: '24h', now: closeNow });
 
         expect(selected).toHaveLength(items.length - 1);
         expect(selected.some((r) => r.item.id === items[0].id)).toBe(false);

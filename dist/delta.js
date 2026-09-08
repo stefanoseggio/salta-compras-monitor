@@ -1,13 +1,9 @@
 import { fingerprintOf } from './fingerprint.js';
-import type { DeltaState, SeenEntry } from './state.js';
-import type { DateRangeOption, EventType, ListingItem, PublicacionDetail } from './types.js';
-
-const DATE_RANGE_MS: Record<DateRangeOption, number> = {
+const DATE_RANGE_MS = {
     '24h': 24 * 60 * 60 * 1000,
     '7d': 7 * 24 * 60 * 60 * 1000,
     '30d': 30 * 24 * 60 * 60 * 1000,
 };
-
 // Salta's only per-publication date field, anywhere (listing header AND
 // detail page - checked every `.publicacion-fila-titulo` label present in
 // both), is "Fecha/Hora Apertura": the bid-opening deadline, not a
@@ -18,19 +14,17 @@ const DATE_RANGE_MS: Record<DateRangeOption, number> = {
 // offers, but an exact boundary a few hours from a window edge can be off
 // by up to 3h. Documented as a known limitation in README.md, not silently
 // ignored.
-export function parseFechaApertura(fechaApertura: string, horaApertura: string): Date | null {
+export function parseFechaApertura(fechaApertura, horaApertura) {
     const dateMatch = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(fechaApertura.trim());
-    if (!dateMatch) return null;
+    if (!dateMatch)
+        return null;
     const [, dd, mm, yyyy] = dateMatch;
-
     const timeMatch = /^(\d{2}):(\d{2})$/.exec(horaApertura.trim());
     const hh = timeMatch ? timeMatch[1] : '00';
     const min = timeMatch ? timeMatch[2] : '00';
-
     const date = new Date(`${yyyy}-${mm}-${dd}T${hh}:${min}:00Z`);
     return Number.isNaN(date.getTime()) ? null : date;
 }
-
 // For the "vigentes" (currently open) publications this actor covers,
 // Fecha/Hora Apertura is overwhelmingly in the FUTURE relative to scrape
 // time (verified live 2026-09-06: every one of 10 sampled dates across
@@ -40,39 +34,20 @@ export function parseFechaApertura(fechaApertura: string, horaApertura: string):
 // last N" - see README.md's Delta mode section for the disclosure. A
 // record whose date can't be parsed is excluded rather than guessed into
 // or out of the window.
-export function isWithinDateRange(
-    fechaApertura: string,
-    horaApertura: string,
-    dateRange: DateRangeOption,
-    now: Date,
-): boolean {
+export function isWithinDateRange(fechaApertura, horaApertura, dateRange, now) {
     const date = parseFechaApertura(fechaApertura, horaApertura);
-    if (!date) return false;
+    if (!date)
+        return false;
     const diffMs = date.getTime() - now.getTime();
     return diffMs >= 0 && diffMs <= DATE_RANGE_MS[dateRange];
 }
-
-export interface SelectOptions {
-    onlyNew: boolean;
-    eventTypes?: Exclude<EventType, 'UNCHANGED' | 'CLOSED'>[];
-    dateRange?: DateRangeOption;
-    now: Date;
-}
-
-export interface SelectedRecord {
-    item: ListingItem;
-    detail: PublicacionDetail | null;
-    eventType: EventType;
-    isNew: boolean;
-    hash: string;
-}
-
-function classify(previous: SeenEntry | undefined, hash: string): EventType {
-    if (!previous) return 'NEW_LISTING';
-    if (previous.hash !== hash) return 'UPDATED';
+function classify(previous, hash) {
+    if (!previous)
+        return 'NEW_LISTING';
+    if (previous.hash !== hash)
+        return 'UPDATED';
     return 'UNCHANGED';
 }
-
 /**
  * Pure decision logic for the items a full listing walk returned this run - kept separate
  * from main.ts's Actor.pushData/fetchDetail side effects so it's directly unit-testable.
@@ -88,27 +63,23 @@ function classify(previous: SeenEntry | undefined, hash: string): EventType {
  * AGENTS.md for why early-stop pagination is unsafe for this source (its listing sorts by
  * opening date, not creation order).
  */
-export function selectRecordsToProcess(
-    listing: { item: ListingItem; detail: PublicacionDetail | null }[],
-    state: DeltaState,
-    options: SelectOptions,
-): SelectedRecord[] {
+export function selectRecordsToProcess(listing, state, options) {
     const { onlyNew, eventTypes, dateRange, now } = options;
-    const allowed = eventTypes ? new Set<EventType>(eventTypes) : null;
-    const selected: SelectedRecord[] = [];
-
+    const allowed = eventTypes ? new Set(eventTypes) : null;
+    const selected = [];
     for (const { item, detail } of listing) {
         const previous = state.entries[item.id];
         const hash = fingerprintOf(item, detail);
         const eventType = classify(previous, hash);
         const isNew = !previous;
-
-        if (dateRange && !isWithinDateRange(item.fechaApertura, item.horaApertura, dateRange, now)) continue;
-        if (onlyNew && eventType === 'UNCHANGED') continue;
-        if (allowed && eventType !== 'UNCHANGED' && !allowed.has(eventType)) continue;
-
+        if (dateRange && !isWithinDateRange(item.fechaApertura, item.horaApertura, dateRange, now))
+            continue;
+        if (onlyNew && eventType === 'UNCHANGED')
+            continue;
+        if (allowed && eventType !== 'UNCHANGED' && !allowed.has(eventType))
+            continue;
         selected.push({ item, detail, eventType, isNew, hash });
     }
-
     return selected;
 }
+//# sourceMappingURL=delta.js.map

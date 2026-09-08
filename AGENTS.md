@@ -128,6 +128,62 @@ charset=UTF-8` on every page checked (home, listing at multiple
   a structured number/year pair. Don't build downstream logic that assumes
   it parses as one.
 
+## Delta engine v2 (2026-09-08)
+
+Supersedes "record_id / event_type choices" below (kept as history - the
+live evidence there, and everything about pagination/state persistence in
+the rest of this section, is still exactly correct and still governs
+unchanged code). `event_type` is no longer always `NEW_LISTING`.
+
+**What changed:**
+
+- `src/state.ts`: `DeltaState.entries` is now `Record<id, SeenEntry>`
+  (`{ hash, titulo, tipoPublicacion, numeroPublicacion, organismo }`), not
+  a bare `seenIds: string[]`. The hash makes UPDATED detection possible;
+  the four display fields let a CLOSED record (see below) still name what
+  closed, since the publication itself is presumably no longer fetchable
+  once it has left the vigentes list. Not backward compatible with the v1
+  shape - `loadDeltaState` treats it as absent, matching this fleet's
+  established convention for a state-shape change (see CHANGELOG.md).
+- `src/fingerprint.ts` (new): sha1 over every listing-card field plus the
+  detail page's field bag/pdfUrl/attachments when detail was fetched.
+- `src/delta.ts`'s `selectRecordsToProcess` now classifies each item as
+  NEW_LISTING / UPDATED / UNCHANGED (only delivered when onlyNew=false)
+  by comparing against the stored entry's hash, instead of a flat default.
+- **`CLOSED` (new event, not in the original spec this actor was built
+  against):** a previously-seen id absent from a COMPLETE walk this run
+  is reported CLOSED - the source gives no closed/withdrawn signal at
+  all, so this is the only way to know a publication left the vigentes
+  list. Gated strictly on `!truncatedByMaxItems` (see
+  `src/fetchListing.ts`'s new return shape): a walk cut short by
+  `maxItems` (the default, 100 < the real ~250-register) proves nothing
+  about ids past where it stopped, so CLOSED detection is skipped and
+  logged rather than risking a false CLOSED on a publication this run
+  simply never looked at. Raise `maxItems` above the real register size
+  (verify live first - see "Known scope limits" below) to enable it.
+- **A real cost tradeoff, disclosed, not hidden:** detecting UPDATED
+  requires re-reading a KNOWN publication's detail page again, not just a
+  new one's - `fetchDetail: true` now fetches detail for every walked
+  item (bounded by `maxItems`, same as before), not only the ones that
+  will end up delivered after onlyNew/dateRange filtering. This is a real
+  increase in request volume for `onlyNew: true` monitoring runs
+  specifically, versus v1's "only fetch detail for what's kept" shape.
+  Accepted deliberately, mirroring `santafe-compras-monitor`'s
+  `recheckKnown` pattern (same tradeoff, same justification: there is no
+  way to detect a same-estado amendment without re-reading the detail
+  page). `fetchDetail: false` remains a cheap listing-only path that never
+  pays this cost, at the price of only fingerprinting listing-card fields.
+- **Pricing**: two-tier PPE, matching the fleet standard - `result` $0.003
+  (this run fetched fresh detail for this record) / `result-summary`
+  $0.001 (listing-only, OR a CLOSED record, which never fetches anything
+  fresh). `Actor.pushData(record, eventName)` performs the charge itself
+  (returns `ChargeResult`) - a real bug caught and fixed during this pass:
+  an earlier draft of this change called `Actor.pushData(record, eventName)`
+  AND a separate `Actor.charge(...)` afterward, which would have
+  double-charged every record. Verified against the installed `apify` SDK's
+  own `.d.ts` before shipping, not assumed from memory of how a sibling
+  actor's code reads.
+
 ## Delta Engine retrofit (2026-09-06)
 
 Added `onlyNew` (delta mode) and `dateRange` input, plus a standardized

@@ -20,8 +20,20 @@
         "onlyNew": {
             "title": "Only new records (delta mode)",
             "type": "boolean",
-            "description": "Delta mode for daily/recurring monitoring: returns only publications not returned by a previous run. Seen ids are persisted across runs in a named key-value store unique to this actor (\"salta-compras-monitor-delta-state\"), not the run's own default store (which is isolated per run and would not survive between scheduled runs). Every record still carries is_new, so a normal (onlyNew=false) run also tells you which of its results are new. Pagination is NOT stopped early once already-seen records are reached: this actor's listing is sorted by Fecha/Hora Apertura (the bid-opening deadline), not by when a publication was created, so a genuinely new publication can appear on any page - onlyNew filters after a full fetch up to maxItems instead of short-circuiting it. See AGENTS.md for the live evidence behind this.",
+            "description": "Delta mode for daily/recurring monitoring: returns only publications that are new, changed (a fingerprinted amendment - a new monto, document, date...) or closed since a previous run. Seen ids are persisted across runs in a named key-value store unique to this actor (\"salta-compras-monitor-delta-state\"), not the run's own default store (which is isolated per run and would not survive between scheduled runs). Every record still carries is_new, so a normal (onlyNew=false) run also tells you which of its results are new. Pagination is NOT stopped early once already-seen records are reached: this actor's listing is sorted by Fecha/Hora Apertura (the bid-opening deadline), not by when a publication was created, so a genuinely new publication can appear on any page - onlyNew filters after a full fetch up to maxItems instead of short-circuiting it. See AGENTS.md for the live evidence behind this.",
             "default": false
+        },
+        "eventTypes": {
+            "title": "Event types to deliver",
+            "type": "array",
+            "description": "Which kinds of change to deliver when 'Only new' is on (ignored, everything delivered, when it is off). NEW_LISTING = never seen before. UPDATED = seen before, a field changed (fingerprinted). CLOSED = a previously-seen publication is absent from a complete walk this run - no longer vigente. CLOSED detection only runs when maxItems does not truncate the walk (a partial walk cannot prove absence) - see AGENTS.md.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": ["NEW_LISTING", "UPDATED", "CLOSED"],
+                "enumTitles": ["NEW_LISTING - never seen before", "UPDATED - a field changed", "CLOSED - no longer vigente"]
+            },
+            "default": ["NEW_LISTING", "UPDATED", "CLOSED"]
         },
         "dateRange": {
             "title": "Filter by opening-date window",
