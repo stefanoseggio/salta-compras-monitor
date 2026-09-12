@@ -1,22 +1,25 @@
 {
-    "$schema": "https://apify.com/schemas/v1/actor.ide.json",
-    "actorSpecification": 1,
-    "name": "salta-compras-monitor",
-    "title": "Salta Tenders Scraper & Monitor",
-    "description": "Extracts public tenders and contract awards (contrataciones, adjudicaciones) from the Province of Salta, Argentina's official public procurement portal, with organism, expediente and opening-date detail per process.",
-    "version": "2.0",
-    "buildTag": "latest",
-    "minMemoryMbytes": 256,
-    "maxMemoryMbytes": 512,
-    "meta": {
-        "templateId": "ts-crawlee-cheerio",
-        "generatedBy": "Claude Code with Claude Sonnet 5"
-    },
-    "inputSchema": "./input_schema.json",
-    "outputSchema": "./output_schema.json",
-    "storages": {
-        "dataset": "./dataset_schema.json"
-    },
-    "changelog": "../CHANGELOG.md",
-    "dockerfile": "../Dockerfile"
+  "$schema": "https://apify.com/schemas/v1/actor.ide.json",
+  "actorSpecification": 1,
+  "name": "salta-compras-monitor",
+  "title": "Salta Argentina Contrataciones - Tender Delta API",
+  "description": "Extracts every currently open tender and contract award (licitaciones, adjudicaciones, contrataciones) from Salta Province, Argentina's official procurement portal, with organism, expediente, opening date/time and document links per publication. Delta mode flags new, amended and closed processes.",
+  "version": "2.0",
+  "buildTag": "latest",
+  "minMemoryMbytes": 256,
+  "maxMemoryMbytes": 512,
+  "meta": {
+    "templateId": "ts-crawlee-cheerio",
+    "generatedBy": "Claude Code with Claude Sonnet 5"
+  },
+  "inputSchema": "./input_schema.json",
+  "outputSchema": "./output_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  },
+  "changelog": "../CHANGELOG.md",
+  "dockerfile": "../Dockerfile",
+  "categories": [
+    "BUSINESS"
+  ]
 }
