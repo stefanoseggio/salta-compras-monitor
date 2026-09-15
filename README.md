@@ -114,6 +114,41 @@ For a faster, listing-only census of the whole register instead of a recurring d
 apify call salta-compras-monitor --input '{ "fetchDetail": false, "maxItems": 300 }'
 ```
 
+## Instant Terminal Run (cURL)
+
+Runs synchronously and returns the resulting dataset items directly in the response - no polling needed. Get your token from [console.apify.com/settings/integrations](https://console.apify.com/settings/integrations).
+
+```bash
+curl -X POST "https://api.apify.com/v2/acts/Tx9wBKZyySZa5WcsE/run-sync-get-dataset-items?token=<YOUR_API_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "maxItems": 50,
+  "onlyNew": true
+}'
+```
+
+## Sample Extracted Dataset (JSON)
+
+One real record from this Actor's own dataset, matching `.actor/dataset_schema.json`:
+
+```json
+{
+  "record_id": "148204",
+  "titulo": "Adjudicacion Simple N 98/2026",
+  "tipoPublicacion": "Adjudicacion Simple",
+  "fechaApertura": "07/09/2026",
+  "horaApertura": "09:00",
+  "objeto": "ADQ. DE UN MOTOR TRIFASICO. PROGRAMA DE FISCALIZACION Y CONTROL",
+  "organismo": "Hospital Senor del Milagro",
+  "expediente": "0100134-173362/2026-0",
+  "event_type": "NEW_LISTING",
+  "is_new": true,
+  "contentHash": "6cffa4c6c4f40d13d460fbee614a93deea4214eb",
+  "source_url": "https://compras.salta.gob.ar/publico/publicacionactual/verpublicacion1/148204/0",
+  "scraped_at": "2026-09-04T21:19:40.875Z"
+}
+```
+
 ## Pricing (Pay-Per-Event)
 
 | Event | Price | Charged when |
