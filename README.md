@@ -7,13 +7,15 @@
 [![Built for Apify](https://img.shields.io/badge/Built%20for-Apify-00C0F3?logo=apify&logoColor=white)](https://apify.com)
 [![Pay-Per-Event](https://img.shields.io/badge/pricing-pay--per--event%20from%20%240.001-3DDC84)](https://apify.com/stefano_seggio/salta-compras-monitor)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Crawlee%2FCheerio-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/stefanoseggio/salta-compras-monitor/blob/main/LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 [![Run on Apify](https://img.shields.io/badge/Run%20on-Apify%20Store-FF9012?logo=apify&logoColor=white&style=for-the-badge)](https://apify.com/stefano_seggio/salta-compras-monitor)
 
 Owner console reference: [console.apify.com/actors/Tx9wBKZyySZa5WcsE](https://console.apify.com/actors/Tx9wBKZyySZa5WcsE)
 
 </div>
+
+**This Actor monitors Salta Province, Argentina's official public-procurement portal and delivers new, amended and closed tenders as a delta feed, on whatever recurring schedule you configure through Apify's own Scheduler.**
 
 ## What this monitors
 
@@ -60,7 +62,79 @@ flowchart LR
 | **Pagination-safe extraction** | Deduplicates publications that the portal's own pagination repeats across adjacent pages, with 4 retries and exponential backoff (1s/2s/4s/8s) on every request. |
 | **Run cap** (`maxItems`) | Hard limit on publications returned per run, sized against the register's own ~250-publication scale. |
 
-## Input reference
+## Cost & BYOK Disclosure
+
+| Event | Price | Charged when |
+| --- | --- | --- |
+| `result` | $0.003 / record | A record with fresh detail fetched this run — new or amended, `fetchDetail: true` |
+| `result-summary` | $0.001 / record | A listing-only record (`fetchDetail: false`), or a `CLOSED` record — there's nothing left to re-fetch |
+
+- **No third-party API key required.** This Actor's `byok` status is `none` — everything it needs to run is included; there is no external service key to obtain, configure, or pay for separately.
+- **Unchanged records are never billed.** Every publication is sha1-fingerprinted (`contentHash`) and compared against the fingerprint persisted from this Actor's own last run. In delta mode (`onlyNew: true`), a publication whose fingerprint still matches is not new, amended or closed — it is simply not returned, and not charged.
+- Platform usage is included in both prices — there is no separate compute charge. A daily monitor of the roughly 250-publication register that finds 5 changes costs about $0.02/day (~$0.60/month); a one-off full pull with detail across the whole register costs about $0.75.
+
+## Quickstart
+
+Get an API token from [console.apify.com/settings/integrations](https://console.apify.com/settings/integrations) (or run `apify login` with the Apify CLI). All three examples below call the real Actor at `stefano_seggio/salta-compras-monitor`.
+
+### cURL
+
+Runs synchronously and returns the resulting dataset items directly in the response — no polling needed.
+
+```bash
+curl -X POST "https://api.apify.com/v2/acts/stefano_seggio~salta-compras-monitor/run-sync-get-dataset-items?token=<YOUR_API_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "maxItems": 50,
+  "onlyNew": true
+}'
+```
+
+### Python (`apify_client`)
+
+```python
+from apify_client import ApifyClient
+
+client = ApifyClient("<YOUR_API_TOKEN>")
+
+run = client.actor("stefano_seggio/salta-compras-monitor").call(run_input={
+    "fetchDetail": True,
+    "maxItems": 100,
+    "onlyNew": True,
+    "eventTypes": ["NEW_LISTING", "UPDATED", "CLOSED"],
+    "dateRange": "7d",
+})
+
+for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+    print(item["event_type"], item["titulo"], item["organismo"])
+```
+
+### Node.js (`apify-client`)
+
+```javascript
+import { ApifyClient } from 'apify-client';
+
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+
+const run = await client.actor('stefano_seggio/salta-compras-monitor').call({
+  fetchDetail: true,
+  maxItems: 100,
+  onlyNew: true,
+  eventTypes: ['NEW_LISTING', 'UPDATED', 'CLOSED'],
+  dateRange: '7d',
+});
+
+const { items } = await client.dataset(run.defaultDatasetId).listItems();
+for (const item of items) {
+  console.log(item.event_type, item.titulo, item.organismo);
+}
+```
+
+For a faster, listing-only census of the whole register instead of a recurring delta check, run with `{ "fetchDetail": false, "maxItems": 300 }`. You can also run it from the CLI (`apify call salta-compras-monitor --input '{...}'`) or from the **Run on Apify Store** button above.
+
+## Input & Output Schema
+
+### Input
 
 | Field | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -70,7 +144,9 @@ flowchart LR
 | `eventTypes` | array | all three | Which of `NEW_LISTING` / `UPDATED` / `CLOSED` to deliver when `onlyNew` is on. |
 | `dateRange` | enum | *(none)* | `"24h"`, `"7d"` or `"30d"` — filters to publications opening within that window. |
 
-## Sample output record
+See [`.actor/input_schema.json`](.actor/input_schema.json) for the full, authoritative schema.
+
+### Output
 
 One dataset record per publication, combining the source's listing and detail-page fields with a change-tracking envelope (real field values, from a publication fetched during development):
 
@@ -92,71 +168,22 @@ One dataset record per publication, combining the source's listing and detail-pa
 }
 ```
 
-The `detail` object (when `fetchDetail` is on) adds `fields` (organismo gestor, costo pliego, lugar de entrega, when present), `pdfUrl`, and `archivosAdjuntos` — the publication's uploaded PDF/spreadsheet attachments. See [`.actor/dataset_schema.json`](.actor/dataset_schema.json) for the full shape, and the Actor's two ready-made dataset views (**Overview**, **Status changes & amendments**) on the Apify platform.
-
-## Quick start
-
-Run it directly from the [Apify Store](https://apify.com/stefano_seggio/salta-compras-monitor), or from the CLI:
-
-```bash
-apify call salta-compras-monitor --input '{
-  "fetchDetail": true,
-  "maxItems": 100,
-  "onlyNew": true,
-  "eventTypes": ["NEW_LISTING", "UPDATED", "CLOSED"],
-  "dateRange": "7d"
-}'
-```
-
-For a faster, listing-only census of the whole register instead of a recurring delta check:
-
-```bash
-apify call salta-compras-monitor --input '{ "fetchDetail": false, "maxItems": 300 }'
-```
-
-## Instant Terminal Run (cURL)
-
-Runs synchronously and returns the resulting dataset items directly in the response - no polling needed. Get your token from [console.apify.com/settings/integrations](https://console.apify.com/settings/integrations).
-
-```bash
-curl -X POST "https://api.apify.com/v2/acts/Tx9wBKZyySZa5WcsE/run-sync-get-dataset-items?token=<YOUR_API_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-  "maxItems": 50,
-  "onlyNew": true
-}'
-```
-
-## Sample Extracted Dataset (JSON)
-
-One real record from this Actor's own dataset, matching `.actor/dataset_schema.json`:
-
-```json
-{
-  "record_id": "148204",
-  "titulo": "Adjudicacion Simple N 98/2026",
-  "tipoPublicacion": "Adjudicacion Simple",
-  "fechaApertura": "07/09/2026",
-  "horaApertura": "09:00",
-  "objeto": "ADQ. DE UN MOTOR TRIFASICO. PROGRAMA DE FISCALIZACION Y CONTROL",
-  "organismo": "Hospital Senor del Milagro",
-  "expediente": "0100134-173362/2026-0",
-  "event_type": "NEW_LISTING",
-  "is_new": true,
-  "contentHash": "6cffa4c6c4f40d13d460fbee614a93deea4214eb",
-  "source_url": "https://compras.salta.gob.ar/publico/publicacionactual/verpublicacion1/148204/0",
-  "scraped_at": "2026-09-04T21:19:40.875Z"
-}
-```
-
-## Pricing (Pay-Per-Event)
-
-| Event | Price | Charged when |
+| Field | Type | Description |
 | --- | --- | --- |
-| `result` | $0.003 / record | A record with fresh detail fetched this run — new or amended, `fetchDetail: true` |
-| `result-summary` | $0.001 / record | A listing-only record (`fetchDetail: false`), or a `CLOSED` record — there's nothing left to re-fetch |
+| `record_id` | string | The portal's own numeric id for this publication. |
+| `titulo` | string | Publication title, e.g. "Adjudicación Simple N° 98/2026". |
+| `tipoPublicacion` | string | Procedure type: `Licitación Pública`, `Contratación Abreviada`, or `Adjudicación Simple`. |
+| `fechaApertura` / `horaApertura` | string | Bid-opening date/time — the only date field this source exposes anywhere. |
+| `objeto` | string | Free-text subject/object of the procurement. |
+| `organismo` | string | Buying organism (hospital, ministry, etc.). |
+| `expediente` | string | Official expediente (case file) number. |
+| `event_type` | string | `NEW_LISTING`, `UPDATED`, or `CLOSED` since the last run. |
+| `is_new` | boolean | Whether `record_id` had never been seen before this run. |
+| `contentHash` | string | SHA-1 fingerprint of the publication's tracked fields, used to detect `UPDATED` across runs. |
+| `source_url` | string | Direct link to the publication's page on `compras.salta.gob.ar`. |
+| `scraped_at` | string (ISO 8601) | When this run fetched the record. |
 
-Platform usage is included in both prices — there is no separate compute charge. A daily monitor of the roughly 250-publication register that finds 5 changes costs about $0.02/day (~$0.60/month); a one-off full pull with detail across the whole register costs about $0.75.
+When `fetchDetail: true`, each record also carries a `detail` object with `fields` (organismo gestor, costo pliego, lugar de entrega, when present), `pdfUrl`, and `archivosAdjuntos` — the publication's uploaded PDF/spreadsheet attachments. See [`.actor/dataset_schema.json`](.actor/dataset_schema.json) for the full shape, and the Actor's two ready-made dataset views (**Overview**, **Status changes & amendments**) on the Apify platform.
 
 ## Reliability
 
@@ -171,6 +198,28 @@ Platform usage is included in both prices — there is no separate compute charg
 - **Nothing to babysit.** Pagination is walked and deduplicated by id automatically, and every request already retries with exponential backoff before the run gives up on a transient failure.
 - **Built-in delta and change detection.** The sha1 content-fingerprinting and cross-run delta state (new / amended / closed) are already built and tested — you'd otherwise have to design and persist that comparison logic yourself.
 - **Managed scheduling and structured output.** Runs land in a dataset with two ready-made views instead of raw HTML you'd have to parse into your own database before you could query it.
+
+## Contributing & Local Setup
+
+This repository contains the Actor's real, buildable TypeScript source under `src/` — cloning it gets you the actual crawler, delta-engine and fingerprinting logic, not just documentation:
+
+```bash
+git clone https://github.com/stefanoseggio/salta-compras-monitor.git
+cd salta-compras-monitor
+npm install
+apify login    # one-time; stores your Apify token locally
+apify run --purge --input '{"maxItems":20,"fetchDetail":false}'
+```
+
+Before opening a pull request, run this repo's own checks, in order:
+
+```bash
+npm run build   # tsc — catches type errors
+npm run lint    # ESLint (@apify/eslint-config)
+npm test        # Vitest unit tests
+```
+
+Then inspect `storage/datasets/default/*.json` from a local `apify run`, not just the log tail. `storage/` is local-only and is never synced to Apify Console; confirming real cloud behavior (delta state persistence across separate runs, proxy/session behavior, scheduling) requires `apify push` to a build tag and a real run on the platform. Bug reports and feature requests are welcome via the Issues tab on this repo or on the Apify Store listing — typically triaged within about 48 hours.
 
 ## Known limitations
 
