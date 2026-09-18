@@ -132,6 +132,61 @@ for (const item of items) {
 
 For a faster, listing-only census of the whole register instead of a recurring delta check, run with `{ "fetchDetail": false, "maxItems": 300 }`. You can also run it from the CLI (`apify call salta-compras-monitor --input '{...}'`) or from the **Run on Apify Store** button above.
 
+## Use this from Claude Desktop, Cursor, or Windsurf (via MCP)
+
+This Actor is also reachable as an MCP tool through Apify's own hosted `@apify/actors-mcp-server`, scoped to just this one Actor via a `?tools=` query string — not the full fleet. Get a token from [Apify Console → Settings → Integrations](https://console.apify.com/settings/integrations) first.
+
+**Claude Desktop** (`%APPDATA%\Claude\claude_desktop_config.json` on Windows, `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS) — uses the `mcp-remote` stdio bridge. Note: `mcp-remote` does not expand shell environment variables inside the JSON string, so paste the literal token in place of `${APIFY_TOKEN}` below, and keep this file out of version control.
+
+```json
+{
+  "mcpServers": {
+    "delta-registry-salta-compras-monitor": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.apify.com/?tools=stefano_seggio/salta-compras-monitor",
+        "--header",
+        "Authorization: Bearer ${APIFY_TOKEN}"
+      ]
+    }
+  }
+}
+```
+
+**Cursor** (`.cursor/mcp.json` or `~/.cursor/mcp.json`) — native HTTP transport:
+
+```json
+{
+  "mcpServers": {
+    "delta-registry-salta-compras-monitor": {
+      "url": "https://mcp.apify.com/?tools=stefano_seggio/salta-compras-monitor",
+      "headers": {
+        "Authorization": "Bearer ${APIFY_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+**Windsurf** (`~/.codeium/windsurf/mcp_config.json`) — uses `serverUrl`, not `url`. Windsurf's `${env:...}` syntax genuinely does resolve from the environment, unlike Claude Desktop's config above:
+
+```json
+{
+  "mcpServers": {
+    "delta-registry-salta-compras-monitor": {
+      "serverUrl": "https://mcp.apify.com/?tools=stefano_seggio/salta-compras-monitor",
+      "headers": {
+        "Authorization": "Bearer ${env:APIFY_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+Want the full 28-actor fleet in one closed-scope config instead of just this Actor? See [`MCP_INTEGRATION.md`](https://github.com/stefanoseggio/delta-registry-website/blob/main/MCP_INTEGRATION.md) in the `delta-registry-website` repo.
+
 ## Input & Output Schema
 
 ### Input
@@ -173,10 +228,13 @@ One dataset record per publication, combining the source's listing and detail-pa
 | `record_id` | string | The portal's own numeric id for this publication. |
 | `titulo` | string | Publication title, e.g. "Adjudicación Simple N° 98/2026". |
 | `tipoPublicacion` | string | Procedure type: `Licitación Pública`, `Contratación Abreviada`, or `Adjudicación Simple`. |
+| `numeroPublicacion` | string | Publication number as shown by the portal (the "N°" portion of `titulo`), e.g. "98/2026". |
 | `fechaApertura` / `horaApertura` | string | Bid-opening date/time — the only date field this source exposes anywhere. |
 | `objeto` | string | Free-text subject/object of the procurement. |
 | `organismo` | string | Buying organism (hospital, ministry, etc.). |
 | `expediente` | string | Official expediente (case file) number. |
+| `consultaPliego` | string | "Consulta y Adquisición de Pliego" field — where/how to obtain the tender documents, as published by the portal. |
+| `consultas` | string | "Consultas" field — contact/inquiry information published for the tender. |
 | `event_type` | string | `NEW_LISTING`, `UPDATED`, or `CLOSED` since the last run. |
 | `is_new` | boolean | Whether `record_id` had never been seen before this run. |
 | `contentHash` | string | SHA-1 fingerprint of the publication's tracked fields, used to detect `UPDATED` across runs. |
