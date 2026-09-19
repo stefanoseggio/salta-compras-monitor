@@ -41,6 +41,31 @@ export function looksLikeListingPage($: CheerioAPI): boolean {
     return $('#frmfiltrobusqueda').length > 0;
 }
 
+// The listing page's own `.pagination` widget carries a real "how far does this walk still
+// have to go" signal, independent of the zero-<article> stop condition: a ">>" (jump to the
+// true last page) link, whose href's trailing offset IS the true last page. Verified live
+// 2026-09-19 against the real site (not just the 2026-09-04 fixtures, which show the same
+// shape): present at offset=0/5/245 pointing to `.../panelfiltrobusqueda/250`, and ABSENT at
+// offset=250 (the true last page itself, which has 3 <article> blocks) and at
+// offset=255/260/500 (all confirmed genuinely past the end - "current" stays pinned at 51 in
+// every one of those, never advancing). So: any page that still has this link is telling us
+// "there is at least one more page, and its real content starts at offset X" - see
+// test/fixtures/listing_offset0.html / listing_offset5.html (both present, ->250) vs
+// test/fixtures/listing_empty.html (absent, that fixture IS the true past-the-end page).
+// Returns null when the widget has no such link - a register that fits on a single page, the
+// true last page, a genuine past-the-end page, or a markup change; callers must treat null as
+// "no signal available", never as "zero more pages".
+export function extractLastPageOffset($: CheerioAPI): number | null {
+    let lastPageOffset: number | null = null;
+    $('.pagination a').each((_i, el) => {
+        const $link = $(el);
+        if ($link.text().trim() !== '>>') return;
+        const match = /panelfiltrobusqueda\/(\d+)/.exec($link.attr('href') ?? '');
+        if (match) lastPageOffset = Number(match[1]);
+    });
+    return lastPageOffset;
+}
+
 export interface ListingResult {
     items: ListingItem[];
     /**
@@ -64,10 +89,21 @@ export interface ListingResult {
      *    one real result. Per the documented pagination behaviour (every real offset up to
      *    the true last page returns >=1 article - see AGENTS.md finding 7), a zero-<article>
      *    reading reached without ever having seen a non-empty page first is not the
-     *    established end-of-pagination case at all.
+     *    established end-of-pagination case at all; OR
+     *  - it arrived at or before the offset the site's OWN pagination widget already told us,
+     *    earlier in this same walk, was the true last page (see `extractLastPageOffset`).
+     *    This actor's pagination has no stable secondary sort key (AGENTS.md finding 1 - the
+     *    same id has been observed live on two different pages), so a register that shrinks
+     *    mid-walk can produce a zero-<article> page that is structurally valid AND past
+     *    offset 0 - the two checks above alone would trust it as genuine - while still being
+     *    premature relative to what the site itself had just reported. Comparing against that
+     *    self-reported marker catches this case without needing to know the site's exact item
+     *    count.
      * False for the well-established, verified-safe case this actor has always relied on: a
      * structurally-valid zero-<article> page reached AFTER at least one earlier offset
-     * already returned real items.
+     * already returned real items, at or past whatever last-page offset the site itself last
+     * reported (or with no such marker available at all, e.g. a register that fits on one
+     * page).
      * A zero-article HTTP 200 is otherwise indistinguishable from a genuine end-of-data page
      * - src/main.ts weighs this flag against whether there is previously tracked state a
      * false "everything is gone" reading would wrongly wipe. See its `detectClosed` call in
@@ -80,6 +116,12 @@ export async function fetchListing(maxItems: number): Promise<ListingResult> {
     const results: ListingItem[] = [];
     const seenIds = new Set<string>();
     let suspectEmptyResult = false;
+    // The highest "true last page starts here" offset reported by this walk's OWN pages so
+    // far - only ever updated from a page that had real <article> blocks (see below), so it
+    // reflects what the site told us BEFORE the zero-<article> page that ends the walk, never
+    // that terminal page's own (possibly already-shifted) reading of itself. Null until the
+    // first page exposing the marker (see `extractLastPageOffset`) is seen.
+    let lastKnownPageOffset: number | null = null;
 
     for (let offset = 0; results.length < maxItems; offset += PAGE_SIZE) {
         const response = await fetchWithRetry(`${LISTING_URL_BASE}/${offset}`);
@@ -89,17 +131,26 @@ export async function fetchListing(maxItems: number): Promise<ListingResult> {
 
         if (items.length === 0) {
             const structurallyValid = looksLikeListingPage($);
-            if (!structurallyValid || offset === 0) {
+            const cameBeforeSitesOwnReportedEnd = lastKnownPageOffset !== null && offset <= lastKnownPageOffset;
+            if (!structurallyValid || offset === 0 || cameBeforeSitesOwnReportedEnd) {
                 suspectEmptyResult = true;
-                const why = structurallyValid
-                    ? 'es la primera pagina de la caminata (nunca se vio ni un resultado real antes)'
-                    : 'no tiene la forma esperada de la pagina de listado (posible bot-check, redireccion, o cambio de estructura del sitio)';
+                let why: string;
+                if (!structurallyValid) {
+                    why = 'no tiene la forma esperada de la pagina de listado (posible bot-check, redireccion, o cambio de estructura del sitio)';
+                } else if (offset === 0) {
+                    why = 'es la primera pagina de la caminata (nunca se vio ni un resultado real antes)';
+                } else {
+                    why = `llego antes de lo que el propio paginador del sitio ya habia informado (la ultima pagina real se reporto en offset=${lastKnownPageOffset})`;
+                }
                 log.warning(`offset=${offset}: 0 publicaciones y la respuesta ${why} - resultado sospechoso, no se trata como fin de paginacion genuino.`);
             } else {
                 log.info(`offset=${offset}: sin mas resultados - fin de la paginacion.`);
             }
             break;
         }
+
+        const declaredLastPageOffset = extractLastPageOffset($);
+        if (declaredLastPageOffset !== null) lastKnownPageOffset = declaredLastPageOffset;
 
         let added = 0;
         for (const item of items) {
