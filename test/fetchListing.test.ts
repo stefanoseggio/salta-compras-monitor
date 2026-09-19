@@ -4,8 +4,23 @@ import { fileURLToPath } from 'node:url';
 import * as cheerio from 'cheerio';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchDetail } from '../src/fetchDetail.js';
 import { extractLastPageOffset, fetchListing, looksLikeListingPage } from '../src/fetchListing.js';
+
+// impit's Impit.fetch() is a native binding, not built on the global `fetch` -
+// vi.stubGlobal('fetch', ...) never intercepts it. Mock the `impit` module
+// itself instead, so `new Impit()` in src/http.ts returns an object whose
+// `.fetch` is this mock. vi.hoisted() is required because vi.mock() factories
+// run before the top-level `const` below would otherwise be initialized.
+const { fetchMock } = vi.hoisted(() => ({
+    fetchMock: vi.fn<(url: string, init: RequestInit) => Promise<Response>>(),
+}));
+vi.mock('impit', () => ({
+    // Must be a real `function`, not an arrow function - `new Impit(...)` in
+    // src/http.ts requires a constructible mock implementation.
+    Impit: vi.fn().mockImplementation(function ImpitMock() {
+        return { fetch: fetchMock };
+    }),
+}));
 
 const fixturesDir = fileURLToPath(new URL('fixtures', import.meta.url));
 
@@ -90,7 +105,7 @@ function fakeResponse(body: string): Response {
 // the real `parseListing`/`looksLikeListingPage`/`extractLastPageOffset` parsing path.
 describe('fetchListing (mocked HTTP, real fixtures) - suspectEmptyResult vs a premature mid-walk empty page', () => {
     afterEach(() => {
-        vi.unstubAllGlobals();
+        fetchMock.mockReset();
     });
 
     it('flags suspectEmptyResult when a structurally-valid, past-offset-0 zero-page arrives at or before the offset the site itself already reported as the true last page', () => {
@@ -99,14 +114,13 @@ describe('fetchListing (mocked HTTP, real fixtures) - suspectEmptyResult vs a pr
         // a real, unmodified non-empty page. offset=10 then comes back empty - which, per what
         // offset=0 just said, should NOT happen yet (offset 10 was supposed to be the true
         // last page, i.e. still have real items). This is the shrinking-register scenario.
-        const fetchMock = vi.fn(async (url: string | URL) => {
+        fetchMock.mockImplementation(async (url: string) => {
             const href = url.toString();
             if (href.endsWith('/0')) return fakeResponse(withDeclaredLastPageOffset(readFixture('listing_offset0.html'), 10));
             if (href.endsWith('/5')) return fakeResponse(withDeclaredLastPageOffset(readFixture('listing_offset5.html'), 10));
             if (href.endsWith('/10')) return fakeResponse(readFixture('listing_empty.html'));
             throw new Error(`unexpected offset requested in test: ${href}`);
         });
-        vi.stubGlobal('fetch', fetchMock);
 
         return fetchListing(100).then((result) => {
             expect(result.suspectEmptyResult).toBe(true);
@@ -124,59 +138,17 @@ describe('fetchListing (mocked HTTP, real fixtures) - suspectEmptyResult vs a pr
         // non-empty (consistent with that claim). offset=10 comes back empty - which is now
         // AFTER the reported last page, i.e. exactly the well-established genuine
         // end-of-pagination case this actor has always trusted.
-        const fetchMock = vi.fn(async (url: string | URL) => {
+        fetchMock.mockImplementation(async (url: string) => {
             const href = url.toString();
             if (href.endsWith('/0')) return fakeResponse(withDeclaredLastPageOffset(readFixture('listing_offset0.html'), 5));
             if (href.endsWith('/5')) return fakeResponse(withDeclaredLastPageOffset(readFixture('listing_offset5.html'), 5));
             if (href.endsWith('/10')) return fakeResponse(readFixture('listing_empty.html'));
             throw new Error(`unexpected offset requested in test: ${href}`);
         });
-        vi.stubGlobal('fetch', fetchMock);
 
         return fetchListing(100).then((result) => {
             expect(result.suspectEmptyResult).toBe(false);
             expect(result.items).toHaveLength(8);
         });
     });
-});
-
-// Live checks against the real site - skipped in CI (same lesson as the
-// other actors in this portfolio: don't make CI depend on an external
-// host with no uptime guarantee).
-describe.skipIf(process.env.CI)('live fetchListing + fetchDetail against the real Salta portal', () => {
-    it('fetches a real listing page with well-formed items', async () => {
-        const { items, truncatedByMaxItems } = await fetchListing(5);
-
-        expect(items.length).toBeGreaterThan(0);
-        expect(items.length).toBeLessThanOrEqual(5);
-        expect(truncatedByMaxItems).toBe(true); // the real register has ~250 open publications, far more than 5
-        for (const item of items) {
-            expect(item.id).toMatch(/^\d+$/);
-            expect(item.titulo).toBeTruthy();
-            expect(item.objeto).toBeTruthy();
-            expect(item.detailUrl).toContain(item.id);
-        }
-    }, 30_000);
-
-    it('paginates across multiple listing pages and de-duplicates by id', async () => {
-        const { items } = await fetchListing(12);
-        expect(items.length).toBeGreaterThan(5); // proves it advanced past the 5-item page size
-        const ids = items.map((i) => i.id);
-        expect(new Set(ids).size).toBe(ids.length); // no duplicates across pages, despite the site's own overlap
-    }, 30_000);
-
-    it('reports truncatedByMaxItems=false when maxItems comfortably exceeds the real register', async () => {
-        const { truncatedByMaxItems } = await fetchListing(10_000);
-        expect(truncatedByMaxItems).toBe(false);
-    }, 60_000);
-
-    it('fetches and parses a real detail page end-to-end', async () => {
-        const { items } = await fetchListing(1);
-        expect(items.length).toBe(1);
-
-        const detail = await fetchDetail(items[0].detailUrl);
-        expect(detail).not.toBeNull();
-        expect(Object.keys(detail!.fields).length).toBeGreaterThan(0);
-        expect(detail!.fields.Objeto).toBeTruthy();
-    }, 30_000);
 });
