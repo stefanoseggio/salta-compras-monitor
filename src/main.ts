@@ -16,7 +16,14 @@ function toEntry(item: ListingItem, hash: string): SeenEntry {
 }
 
 await Actor.init();
-await run();
+try {
+    await run();
+} catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    log.exception(error instanceof Error ? error : new Error(message), 'Run failed');
+    await Actor.setValue('LAST_ERROR', { message, at: new Date().toISOString() });
+    await Actor.fail(`Salta Compras Monitor extraction failed: ${message}`);
+}
 await Actor.exit();
 
 async function run(): Promise<void> {
