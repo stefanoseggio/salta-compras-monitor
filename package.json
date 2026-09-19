@@ -1,6 +1,6 @@
 {
     "name": "salta-compras-monitor",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "type": "module",
     "description": "Salta Compras Monitor: extracts public tenders and contract awards (contrataciones, adjudicaciones) from the Province of Salta, Argentina's official procurement portal, with organism, expediente and opening-date detail per process.",
     "engines": {
