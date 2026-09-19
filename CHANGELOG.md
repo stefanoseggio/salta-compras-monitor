@@ -1,5 +1,27 @@
 # Changelog
 
+## [3.0.0](https://github.com/stefanoseggio/salta-compras-monitor/compare/salta-compras-monitor-v2.0.0...salta-compras-monitor-v3.0.0) (2026-09-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* v2.0 delta engine - UPDATED/CLOSED via content fingerprint + complete-walk absence
+
+### Features
+
+* retrofit Delta Engine (onlyNew delta mode + dateRange + envelope) ([22fed9d](https://github.com/stefanoseggio/salta-compras-monitor/commit/22fed9d1073b9158d9dd783b46b0adc253ad459e))
+* Salta Compras Monitor - listing + detail scraper for compras.salta.gob.ar ([a1ef2bc](https://github.com/stefanoseggio/salta-compras-monitor/commit/a1ef2bcb64470cd25cd7cef4e2335a7eb1f31a17))
+* v2.0 delta engine - UPDATED/CLOSED via content fingerprint + complete-walk absence ([7b4c8c4](https://github.com/stefanoseggio/salta-compras-monitor/commit/7b4c8c4e979b0cf13913751e645e1829bc2b9a6a))
+
+
+### Bug Fixes
+
+* **ci:** pass RELEASE_PLEASE_TOKEN so release PRs skip the bot-approval gate ([9209567](https://github.com/stefanoseggio/salta-compras-monitor/commit/9209567e9df98b5766de0c7c4335d6c3eb896529))
+* distrust a mid-walk empty page that arrives before the site's own reported last page ([#10](https://github.com/stefanoseggio/salta-compras-monitor/issues/10)) ([a7d5c68](https://github.com/stefanoseggio/salta-compras-monitor/commit/a7d5c68975f8e1bff31998ee7200b41483952bd0))
+* guard mass CLOSED detection against a suspect empty listing walk ([#8](https://github.com/stefanoseggio/salta-compras-monitor/issues/8)) ([1a62e73](https://github.com/stefanoseggio/salta-compras-monitor/commit/1a62e7397ae64ae24dc6cdda6aa579cc71b44517))
+* **http:** add per-attempt timeout, narrow retries to transient statuses ([#9](https://github.com/stefanoseggio/salta-compras-monitor/issues/9)) ([de1f53d](https://github.com/stefanoseggio/salta-compras-monitor/commit/de1f53d87e91554875422501fefc9cb7109006ef))
+* wrap run() in try/catch with Actor.fail()/LAST_ERROR convention ([#11](https://github.com/stefanoseggio/salta-compras-monitor/issues/11)) ([ba9e3d1](https://github.com/stefanoseggio/salta-compras-monitor/commit/ba9e3d1d42a74385540858cedb54c957cfa85e6a))
+
 ## 2.0.0 - 2026-09-08
 
 The v2 delta engine: amendment and closure detection, replacing the v1 retrofit's "always NEW_LISTING" limitation - see AGENTS.md "Delta engine v2" for the full technical reasoning.
