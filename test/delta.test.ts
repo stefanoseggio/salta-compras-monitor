@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import * as cheerio from 'cheerio';
 import { describe, expect, it } from 'vitest';
 
-import { isWithinDateRange, parseFechaApertura, selectRecordsToProcess } from '../src/delta.js';
+import { detectClosed, isWithinDateRange, parseFechaApertura, selectRecordsToProcess } from '../src/delta.js';
 import { fingerprintOf } from '../src/fingerprint.js';
 import { parseListing } from '../src/parsers/listing.js';
 import type { DeltaState, SeenEntry } from '../src/state.js';
@@ -155,6 +155,72 @@ describe('selectRecordsToProcess - dateRange', () => {
 
         expect(selected).toHaveLength(items.length - 1);
         expect(selected.some((r) => r.item.id === items[0].id)).toBe(false);
+    });
+});
+
+describe('detectClosed', () => {
+    const baseOptions = {
+        truncatedByMaxItems: false,
+        suspectEmptyResult: false,
+        closedAllowed: true,
+        scrapedAt: '2026-09-18T00:00:00.000Z',
+    };
+
+    function stateWith(ids: string[]): DeltaState {
+        const entries: DeltaState['entries'] = {};
+        for (const id of ids) {
+            entries[id] = { hash: `h${id}`, titulo: `t${id}`, tipoPublicacion: 'tp', numeroPublicacion: 'np', organismo: 'org' };
+        }
+        return { entries, lastRunAt: null };
+    }
+
+    it('reports every previously tracked id absent from a genuine, complete, non-suspect walk as CLOSED - the correct, legitimate behaviour that must keep working', () => {
+        const state = stateWith(['1', '2', '3']);
+        const result = detectClosed({ ...baseOptions, state, walkedIds: new Set(['1']) });
+
+        expect(result.skippedReason).toBeNull();
+        expect(result.closed.map((r) => r.record_id).sort()).toEqual(['2', '3']);
+        expect(result.closed.every((r) => r.event_type === 'CLOSED')).toBe(true);
+    });
+
+    it('a real, genuinely empty register (state was already empty) produces no CLOSED records and is not treated as suspect', () => {
+        const result = detectClosed({ ...baseOptions, state: EMPTY_STATE, walkedIds: new Set() });
+        expect(result.skippedReason).toBeNull();
+        expect(result.closed).toEqual([]);
+    });
+
+    it('skips detection when the walk was truncated by maxItems, regardless of suspectEmptyResult', () => {
+        const state = stateWith(['1', '2']);
+        const result = detectClosed({ ...baseOptions, state, walkedIds: new Set(), truncatedByMaxItems: true });
+        expect(result.skippedReason).toBe('truncated');
+        expect(result.closed).toEqual([]);
+    });
+
+    it('skips detection when eventTypes excludes CLOSED', () => {
+        const state = stateWith(['1', '2']);
+        const result = detectClosed({ ...baseOptions, state, walkedIds: new Set(), closedAllowed: false });
+        expect(result.skippedReason).toBe('event-type-excluded');
+        expect(result.closed).toEqual([]);
+    });
+
+    // THE BUG FIX: a zero-article HTTP 200 (bot-check page, redirect, or a site structure
+    // change) is otherwise indistinguishable from a genuine "the register is empty" reading.
+    // Before this guard, this exact input (walkedIds empty, suspectEmptyResult unset/ignored,
+    // real tracked state present) produced a CLOSED record for every single tracked id and
+    // let src/main.ts's save wipe them all from the persisted state on one flaky fetch.
+    it('does NOT report mass CLOSED when fetchListing flagged the walk as a suspected fetch failure, even though every tracked id is technically absent from it', () => {
+        const state = stateWith(['148021', '148030', '148037', '148204', '148437']);
+
+        const result = detectClosed({ ...baseOptions, state, walkedIds: new Set(), suspectEmptyResult: true });
+
+        expect(result.skippedReason).toBe('suspect-empty-result');
+        expect(result.closed).toEqual([]); // not one of the 5 previously tracked ids is reported CLOSED
+    });
+
+    it('suspectEmptyResult on a cold start (no previously tracked state) changes nothing - there is nothing to wrongly wipe', () => {
+        const result = detectClosed({ ...baseOptions, state: EMPTY_STATE, walkedIds: new Set(), suspectEmptyResult: true });
+        expect(result.skippedReason).toBeNull();
+        expect(result.closed).toEqual([]);
     });
 });
 

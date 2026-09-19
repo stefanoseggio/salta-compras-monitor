@@ -1,6 +1,6 @@
 import { fingerprintOf } from './fingerprint.js';
 import type { DeltaState, SeenEntry } from './state.js';
-import type { DateRangeOption, EventType, ListingItem, PublicacionDetail } from './types.js';
+import type { DateRangeOption, EventType, ListingItem, PublicacionDetail, PublicacionRecord } from './types.js';
 
 const DATE_RANGE_MS: Record<DateRangeOption, number> = {
     '24h': 24 * 60 * 60 * 1000,
@@ -111,4 +111,93 @@ export function selectRecordsToProcess(
     }
 
     return selected;
+}
+
+export function detailUrlFor(id: string): string {
+    return `https://compras.salta.gob.ar/publico/publicacionactual/verpublicacion1/${id}/0`;
+}
+
+/** Why detectClosed produced no CLOSED records at all this run, distinct from "it ran and genuinely found none" (skippedReason === null with an empty result is that case). Surfaced so src/main.ts can log something specific instead of silently doing nothing. */
+export type SkippedClosedReason = 'truncated' | 'suspect-empty-result' | 'event-type-excluded' | null;
+
+export interface DetectClosedOptions {
+    state: DeltaState;
+    /** Ids fetchListing actually walked past this run. */
+    walkedIds: ReadonlySet<string>;
+    /** From fetchListing.ListingResult - a walk cut short by maxItems says nothing about ids past where it stopped. */
+    truncatedByMaxItems: boolean;
+    /**
+     * From fetchListing.ListingResult - true when this run's walk ended in a zero-result
+     * reading that is not trustworthy (a bot-check page, a redirect, a site structure change,
+     * or a suspicious first-page zero - see src/fetchListing.ts). Only actually gates
+     * anything when there IS previously tracked state a false CLOSED sweep could wrongly
+     * wipe; a cold start with nothing tracked yet has nothing to protect.
+     */
+    suspectEmptyResult: boolean;
+    /** False when the caller explicitly excluded CLOSED via the `eventTypes` input. */
+    closedAllowed: boolean;
+    scrapedAt: string;
+}
+
+export interface DetectClosedResult {
+    closed: PublicacionRecord[];
+    skippedReason: SkippedClosedReason;
+}
+
+/**
+ * A previously-seen id absent from this run's walk has (probably) left the vigentes list -
+ * closed, resolved, expired or withdrawn. The source does not distinguish which, so this
+ * actor reports CLOSED without guessing further.
+ *
+ * THE BUG THIS GUARDS AGAINST: a zero-article HTTP 200 response (bot-check interstitial,
+ * redirect, or a site structure change breaking parseListing) is otherwise indistinguishable
+ * from a genuine "the register is empty" reading. Treating it as genuine would report EVERY
+ * previously tracked publication as CLOSED and (via src/main.ts's state save) permanently
+ * drop them from the persisted delta state - a false mass-closure event plus a silent state
+ * wipe, from nothing more than a single flaky fetch.
+ *
+ * Gated on three independent reasons NOT to trust an id's absence as a real closure:
+ *  - `truncatedByMaxItems`: the walk simply didn't look at every currently-vigente
+ *    publication (see src/fetchListing.ts).
+ *  - `suspectEmptyResult` (with existing state to protect): THIS run's "vigentes" reading is
+ *    itself untrustworthy - see src/fetchListing.ts's `suspectEmptyResult`.
+ *  - `!closedAllowed`: the caller explicitly excluded CLOSED via `eventTypes`.
+ * In every skipped case `closed` is `[]` and src/main.ts's save leaves the previously tracked
+ * entries exactly as they were, so a later, healthy run can still detect a genuine closure
+ * instead of this run's suspect reading silently erasing the record of what was open. See
+ * AGENTS.md "Delta engine v2".
+ */
+export function detectClosed(options: DetectClosedOptions): DetectClosedResult {
+    const { state, walkedIds, truncatedByMaxItems, suspectEmptyResult, closedAllowed, scrapedAt } = options;
+
+    if (truncatedByMaxItems) return { closed: [], skippedReason: 'truncated' };
+    if (!closedAllowed) return { closed: [], skippedReason: 'event-type-excluded' };
+
+    const hasExistingState = Object.keys(state.entries).length > 0;
+    if (suspectEmptyResult && hasExistingState) return { closed: [], skippedReason: 'suspect-empty-result' };
+
+    const closed: PublicacionRecord[] = [];
+    for (const [id, entry] of Object.entries(state.entries)) {
+        if (walkedIds.has(id)) continue;
+        closed.push({
+            titulo: entry.titulo,
+            tipoPublicacion: entry.tipoPublicacion,
+            numeroPublicacion: entry.numeroPublicacion,
+            fechaApertura: '',
+            horaApertura: '',
+            objeto: '',
+            organismo: entry.organismo,
+            expediente: '',
+            consultaPliego: '',
+            consultas: '',
+            detail: null,
+            record_id: id,
+            event_type: 'CLOSED',
+            scraped_at: scrapedAt,
+            is_new: false,
+            source_url: detailUrlFor(id),
+            contentHash: entry.hash,
+        });
+    }
+    return { closed, skippedReason: null };
 }

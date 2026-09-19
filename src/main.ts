@@ -1,10 +1,10 @@
 import { Actor, log } from 'apify';
 
-import { selectRecordsToProcess } from './delta.js';
+import { detectClosed, selectRecordsToProcess } from './delta.js';
 import { fetchDetail } from './fetchDetail.js';
 import { fetchListing } from './fetchListing.js';
 import { fingerprintOf } from './fingerprint.js';
-import type { DeltaState, SeenEntry } from './state.js';
+import type { SeenEntry } from './state.js';
 import { loadDeltaState, saveDeltaState } from './state.js';
 import type { ActorInput, ListingItem, PublicacionDetail, PublicacionRecord } from './types.js';
 
@@ -13,45 +13,6 @@ const EVENT_SUMMARY = 'result-summary';
 
 function toEntry(item: ListingItem, hash: string): SeenEntry {
     return { hash, titulo: item.titulo, tipoPublicacion: item.tipoPublicacion, numeroPublicacion: item.numeroPublicacion, organismo: item.organismo };
-}
-
-function detailUrlFor(id: string): string {
-    return `https://compras.salta.gob.ar/publico/publicacionactual/verpublicacion1/${id}/0`;
-}
-
-/**
- * A previously-seen id absent from this run's COMPLETE walk (fetchListing was not truncated
- * by maxItems) has left the vigentes list - closed, resolved, expired or withdrawn. The
- * source does not distinguish which, so this actor reports it as CLOSED without guessing
- * further. Only trustworthy against a complete walk - see src/fetchListing.ts and
- * AGENTS.md "Delta engine v2": a maxItems-truncated walk simply didn't look at every
- * currently-vigente publication, so an id's absence there proves nothing.
- */
-function findClosed(state: DeltaState, walkedIds: ReadonlySet<string>, scrapedAt: string): PublicacionRecord[] {
-    const closed: PublicacionRecord[] = [];
-    for (const [id, entry] of Object.entries(state.entries)) {
-        if (walkedIds.has(id)) continue;
-        closed.push({
-            titulo: entry.titulo,
-            tipoPublicacion: entry.tipoPublicacion,
-            numeroPublicacion: entry.numeroPublicacion,
-            fechaApertura: '',
-            horaApertura: '',
-            objeto: '',
-            organismo: entry.organismo,
-            expediente: '',
-            consultaPliego: '',
-            consultas: '',
-            detail: null,
-            record_id: id,
-            event_type: 'CLOSED',
-            scraped_at: scrapedAt,
-            is_new: false,
-            source_url: detailUrlFor(id),
-            contentHash: entry.hash,
-        });
-    }
-    return closed;
 }
 
 await Actor.init();
@@ -69,7 +30,7 @@ async function run(): Promise<void> {
     // by creation order, so a genuinely new publication can land on any
     // page - see AGENTS.md for the live evidence. onlyNew is applied below
     // as a post-filter over this full result, not as a pagination shortcut.
-    const { items: listing, truncatedByMaxItems } = await fetchListing(maxItems);
+    const { items: listing, truncatedByMaxItems, suspectEmptyResult } = await fetchListing(maxItems);
     log.info(`Total publicaciones listadas: ${listing.length}${truncatedByMaxItems ? ' (maxItems reached - not a complete census)' : ''}`);
 
     // Detail is fetched for every walked item when shouldFetchDetail=true, not only the ones
@@ -93,9 +54,20 @@ async function run(): Promise<void> {
 
     const walkedIds = new Set(listing.map((item) => item.id));
     const closedAllowed = !eventTypes || eventTypes.includes('CLOSED');
-    const closed = truncatedByMaxItems || !closedAllowed ? [] : findClosed(state, walkedIds, scrapedAt);
-    if (truncatedByMaxItems && Object.keys(state.entries).length > 0) {
+    const { closed, skippedReason } = detectClosed({ state, walkedIds, truncatedByMaxItems, suspectEmptyResult, closedAllowed, scrapedAt });
+    const previouslyTrackedCount = Object.keys(state.entries).length;
+    if (skippedReason === 'truncated' && previouslyTrackedCount > 0) {
         log.info('Skipping CLOSED detection this run: the walk was truncated by maxItems, so it is not a complete census.');
+    } else if (skippedReason === 'suspect-empty-result') {
+        // The confirmed bug this guards against: fetchListing came back with a zero-article
+        // HTTP 200 that isn't trustworthy (bot-check page, redirect, or a site structure
+        // change) - not a genuine "every publication closed" event. Emitting CLOSED here and
+        // letting the save below prune these ids would silently wipe every previously
+        // tracked publication from the persisted state on nothing more than a single flaky
+        // fetch. See src/fetchListing.ts's suspectEmptyResult and src/delta.ts's detectClosed.
+        log.warning(
+            `Skipping CLOSED detection this run: fetchListing's zero-result reading looks like a fetch failure rather than a genuine empty register, and ${previouslyTrackedCount} publications were previously tracked. Leaving their state untouched so a real subsequent run can still detect genuine closures.`,
+        );
     }
 
     let pushed = 0;
