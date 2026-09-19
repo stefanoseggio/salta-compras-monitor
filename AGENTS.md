@@ -33,10 +33,48 @@ panelfiltrobusqueda/{offset}` in steps of 5 (the fixed page size) until a
   publication's detail page (`publico/publicacionactual/verpublicacion1/
 {id}/0`), a richer superset of the listing fields plus attached
   documents.
-- `src/http.ts` - shared fetch-with-retry helper, native `fetch()`, no
-  proxy, exponential backoff for transient failures only.
+- `src/http.ts` - shared fetch-with-retry helper, `impit`-backed (see
+  "HTTP transport: `impit`" below), no proxy, exponential backoff for
+  transient failures only.
 - `src/main.ts` - lists, then (optionally, on by default) fetches full
   detail per publication, pushes + charges per item.
+
+## HTTP transport: `impit`, not the native `fetch`
+
+`src/http.ts` makes requests via a module-level `Impit` instance
+(`new Impit({ browser: 'chrome' })`, from the `impit` package), not the
+global `fetch`. This gives every request a real, internally-consistent
+Chrome TLS/HTTP2 fingerprint instead of Node's native one - added
+2026-09-19 as part of the same fleet-wide TLS-fingerprint-hardening pass
+already applied to florida-tenders-monitor and australia-grantconnect-monitor
+(Node's own `fetch` is not itself deprecated; this is proactive hardening,
+not a bug fix). Two things to know if you touch this file again:
+- **`fetchWithRetry`'s single call site had no `RequestInit`-typed
+  parameter of its own** (the options object is an inline literal), so this
+  actor didn't hit the narrower-`method`-type `tsc` error the pilot did -
+  but its return type annotation did need to change from `Promise<Response>`
+  (the DOM type) to `Promise<ImpitResponse>` (from `'impit'`), since
+  `impit.fetch()` resolves to an `ImpitResponse`, not a native `Response`.
+- **`Impit.fetch()` is a native binding, not built on the global `fetch`.**
+  `vi.stubGlobal('fetch', ...)` will NOT intercept it - it does nothing and
+  the real network call goes out, which is exactly what broke this actor's
+  two mocked `fetchListing` tests when this was first added (they silently
+  started hitting the live Salta portal instead of the mock).
+  `test/fetchListing.test.ts` now mocks the `impit` module itself instead
+  (`vi.mock('impit', ...)`, with `vi.hoisted()` for the mock function
+  reference, and a real `function` - not an arrow function - as the mock's
+  `Impit` implementation, since `new Impit(...)` requires a constructible
+  mock). **That mock is file-scoped** (a Vitest `vi.mock()` applies to
+  every test in the file it's declared in), which is also why this pass
+  moved the real-network `fetchListing`/`fetchDetail` checks out of
+  `fetchListing.test.ts` into their own `test/live.test.ts`: leaving them
+  in the same file as the `impit` mock made them silently call the *mock*
+  (which resolves to `undefined` with no implementation set, throwing
+  `Cannot read properties of undefined (reading 'ok')`) instead of the real
+  site - caught only by actually running the live suite (`CI= npm test`;
+  see `.github/workflows/test.yaml`'s `live-smoke-test` job) after this
+  change, not by the mocked unit tests. Keep the mock and the live checks
+  in separate files if this area is touched again.
 
 ## What the original recon notes got right, and what they missed
 

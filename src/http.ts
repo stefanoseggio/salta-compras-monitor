@@ -1,3 +1,11 @@
+import { Impit, type ImpitResponse } from 'impit';
+
+// One Impit instance per actor run: it holds the connection pool and TLS
+// session cache, and gives every request a real, internally-consistent
+// Chrome TLS/HTTP2 fingerprint instead of Node's native (and distinctively
+// bot-shaped) one - see AGENTS.md for why this was added.
+const impit = new Impit({ browser: 'chrome' });
+
 export class HttpError extends Error {
     constructor(
         public readonly status: number,
@@ -18,13 +26,13 @@ function isRetriableStatus(status: number): boolean {
     return status === 408 || status === 425 || status === 429 || status >= 500;
 }
 
-// Native fetch(), no proxy needed - verified live 2026-09-04: reachable
-// from a plain datacenter IP (curl and Node fetch() both got 200 OK with
-// no User-Agent spoofing). Server sends `Content-Type: text/html;
-// charset=UTF-8` on every page checked (home, listing, detail, both 2026
-// and 2021 records) and accented characters (Señor, Adquisición) round-trip
-// correctly through Response.text() - no ArrayBuffer/TextDecoder detour
-// needed here, unlike a target that serves ISO-8859-1.
+// No proxy needed - verified live 2026-09-04: reachable from a plain
+// datacenter IP (curl and Node fetch() both got 200 OK with no User-Agent
+// spoofing). Server sends `Content-Type: text/html; charset=UTF-8` on every
+// page checked (home, listing, detail, both 2026 and 2021 records) and
+// accented characters (Señor, Adquisición) round-trip correctly through
+// response.text() - no ArrayBuffer/TextDecoder detour needed here, unlike a
+// target that serves ISO-8859-1.
 //
 // Each attempt carries its own AbortSignal.timeout so a stalled connection
 // can't hang the run indefinitely, and retries are limited to 408/425/429,
@@ -35,11 +43,11 @@ export async function fetchWithRetry(
     maxRetries = 4,
     baseDelayMs = 1000,
     timeoutMs = 45_000,
-): Promise<Response> {
+): Promise<ImpitResponse> {
     let lastError: Error = new Error('unreachable');
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
-            const response = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(timeoutMs) });
+            const response = await impit.fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(timeoutMs) });
             if (response.ok) return response;
             if (!isRetriableStatus(response.status)) throw new HttpError(response.status, url);
             lastError = new HttpError(response.status, url);
